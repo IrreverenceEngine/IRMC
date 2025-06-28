@@ -1,14 +1,16 @@
 #pragma once
 
+#include <IRMC_CTypes.hpp>
+
 #include <glm.hpp>
 
 namespace IRMC {
     struct Plane {
-        glm::vec3 normal;
-        float dist;
+        glm::highp_dvec3 normal;
+        Float64 dist;
 
-        float DistFromPoint(const glm::vec3& p) const;
+        Float64 DistFromPoint(const glm::highp_dvec3& p) const;
 
-        static Plane MakeFromPoints(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c);
+        static Plane MakeFromPoints(const glm::highp_dvec3& a, const glm::highp_dvec3& b, const glm::highp_dvec3& c);
     };
 }

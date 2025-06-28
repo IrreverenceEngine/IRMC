@@ -9,7 +9,7 @@ namespace IRMC {
 
     Map::Map(const char* mapdata)
     {
-        // TOKENIZE
+        // Tokenize
 
         const char* data = mapdata;
         while (char c = *data++) {
@@ -97,110 +97,12 @@ namespace IRMC {
             }
         }
 
-        m_Tokens.push_back({ MToken::Type::END_OF_FILE, 0 });
-
-        // PARSE TOKENS
-        // TODO: Rewrite this shit LMFAO
+        // Parse Tokens
 
         while (!TknIsEnd()) {
-            if (TknExpect(MToken::Type::OPEN_CURLY)) {
-                TknAdvance();
-                Entity ent;
-                while (!TknIsEnd() && TknPeek().type != MToken::Type::CLOSED_CURLY) {
-                    const MToken& fTkn = TknPeek();
-                    if (fTkn.type == MToken::Type::STRING) {
-                        // KeyValue
-                        const MToken& key = TknAdvance();
-                        const MToken& value = TknAdvance();
-                        ent.SetKeyValue(key.val.as_str, value.val.as_str);
-                    } else if (fTkn.type == MToken::Type::OPEN_CURLY) {
-                        TknAdvance();
-                        std::vector<Brushside> brushsides;
-
-                        while (!TknIsEnd() && TknPeek().type != MToken::Type::CLOSED_CURLY) {
-                            Brushside side;
-
-                            TknAdvance();
-                            glm::vec3 p1 = {
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64
-                            };
-                            TknAdvance();
-
-                            TknAdvance();
-                            glm::vec3 p2 = {
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64
-                            };
-                            TknAdvance();
-
-                            TknAdvance();
-                            glm::vec3 p3 = {
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64
-                            };
-                            TknAdvance();
-
-                            const char* texname = TknAdvance().val.as_str;
-
-                            TknAdvance();
-                            glm::vec4 texU = {
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64
-                            };
-                            TknAdvance();
-
-                            TknAdvance();
-                            glm::vec4 texV = {
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64
-                            };
-                            TknAdvance();
-
-                            Float64 rotation = TknAdvance().val.as_f64; // Skip Rotation, we don't use it.
-
-                            glm::vec2 texScale = {
-                                TknAdvance().val.as_f64,
-                                TknAdvance().val.as_f64
-                            };
-
-                            side.plane = Plane::MakeFromPoints(QVec3ToVec3(p1), QVec3ToVec3(p2), QVec3ToVec3(p3));
-                            side.texScale = texScale;
-                            side.texU = QVec4ToVec4(texU);
-                            side.texV = QVec4ToVec4(texV);
-
-                            // IRMC_MSG(INFO,
-                            //     "{\n(%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) %s "
-                            //     "[%.2f, %.2f, %.2f, %.2f] [%.2f, %.2f, %.2f, %.2f] %.2f %.2f %.2f\n}",
-                            //     p1.x, p1.y, p1.z,
-                            //     p2.x, p2.y, p2.z,
-                            //     p3.x, p3.y, p3.z,
-                            //     texname,
-                            //     texU.x, texU.y, texU.z, texU.w,
-                            //     texV.x, texV.y, texV.z, texV.w,
-                            //     rotation, texScale.x, texScale.y
-                            // );
-
-                            brushsides.push_back(side);
-                        }
-
-                        ent.AddBrush(Brush(brushsides));
-                    } else {
-                        TknAdvance();
-                    }
-
-                }
-                m_Entities.push_back(ent);
-            }
-
-            TknAdvance();
+            TknExpect(MToken::Type::OPEN_CURLY);
+            ParseEntity();
+            TknExpect(MToken::Type::CLOSED_CURLY);
         }
 
         for (const MToken& tkn : m_Tokens) {
@@ -212,14 +114,14 @@ namespace IRMC {
         m_Tokens.clear();
     }
     
-    bool Map::TknExpect(MToken::Type type)
+    void Map::TknExpect(MToken::Type type)
     {
-        if (TknPeek().type != type) {
-            TknAdvance();
-            return false;
+        MToken::Type tkntype = TknPeek().type;
+        if (tkntype != type) {
+            IRMC_MSG(FATAL, "Expected %s, got %s", MToken::TypeName(type), MToken::TypeName(tkntype));
         }
 
-        return true;
+        m_Pos++;
     }
 
     const MToken& Map::TknPeek() IRMC_RETURN(m_Tokens[m_Pos])
@@ -230,19 +132,96 @@ namespace IRMC {
     {
         Entity ent;
         while (!TknIsEnd() && TknPeek().type != MToken::Type::CLOSED_CURLY) {
-            const MToken& fTkn = TknPeek();
-            if (fTkn.type == MToken::Type::STRING) {
-                const MToken& key = TknAdvance();
-                const MToken& value = TknAdvance();
-                IRMC_MSG(INFO, "%s", key.val.as_str);
-                ent.SetKeyValue(key.val.as_str, value.val.as_str);
-                m_Entities.push_back(ent);
-            } else if (fTkn.type == MToken::Type::OPEN_CURLY) {
-                TknAdvance();
-                break;
-            } else {
-                TknAdvance();
+            const MToken& tkn = TknPeek();
+
+            if (tkn.type == MToken::Type::STRING) {
+                std::string key = TknAdvance().val.as_str;
+                std::string value = TknAdvance().val.as_str;
+
+                ent.SetKeyValue(key, value);
+            } else if (tkn.type == MToken::Type::OPEN_CURLY) {
+                ParseBrush(ent);
             }
         }
+
+        m_Entities.push_back(std::move(ent));
     }
+
+    void Map::ParseBrush(Entity& ent)
+    {
+        TknExpect(MToken::Type::OPEN_CURLY);
+
+        std::vector<Brushside> brushsides;
+        while (!TknIsEnd() && TknPeek().type != MToken::Type::CLOSED_CURLY) {
+            TknExpect(MToken::Type::OPEN_ROUND);
+            glm::highp_dvec3 p1 = {
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64
+            };
+            TknExpect(MToken::Type::CLOSED_ROUND);
+
+            TknExpect(MToken::Type::OPEN_ROUND);
+            glm::highp_dvec3 p2 = {
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64
+            };
+            TknExpect(MToken::Type::CLOSED_ROUND);
+
+            TknExpect(MToken::Type::OPEN_ROUND);
+            glm::highp_dvec3 p3 = {
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64
+            };
+            TknExpect(MToken::Type::CLOSED_ROUND);
+
+            std::string texName = TknAdvance().val.as_str;
+
+            TknExpect(MToken::Type::OPEN_SQUARE);
+            glm::highp_dvec4 texU = {
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64
+            };
+            TknExpect(MToken::Type::CLOSED_SQUARE);
+
+            TknExpect(MToken::Type::OPEN_SQUARE);
+            glm::highp_dvec4 texV = {
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64
+            };
+            TknExpect(MToken::Type::CLOSED_SQUARE);
+
+            Float64 rotation = TknAdvance().val.as_f64; // We don't use this.
+
+            glm::highp_dvec2 texScale = {
+                TknAdvance().val.as_f64,
+                TknAdvance().val.as_f64
+            };
+
+            Brushside brushside {
+                Plane::MakeFromPoints(QVec3ToVec3(p1),
+                    QVec3ToVec3(p2),
+                    QVec3ToVec3(p3)
+                ),
+                QVec4ToVec4(texU),
+                QVec4ToVec4(texV),
+                texScale,
+                std::move(texName)
+            };
+
+            brushsides.push_back(std::move(brushside));
+        }
+
+        TknExpect(MToken::Type::CLOSED_CURLY);
+
+        Brush brush(std::move(brushsides));
+        ent.AddBrush(brush);
+    }
+
 }

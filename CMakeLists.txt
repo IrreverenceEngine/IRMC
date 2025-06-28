@@ -20,6 +20,7 @@ target_link_libraries(irmc PRIVATE
 
 target_include_directories(irmc PUBLIC
     src/
+    src/thirdparty
     vendor/glm/glm
     vendor/raylib/src
 )

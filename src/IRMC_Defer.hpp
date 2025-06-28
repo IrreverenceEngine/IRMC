@@ -19,4 +19,4 @@ namespace IRMC {
 
 }
 
-#define IRMC_DEFER(...) IRMC::Defer IRMC_UNIQUE(__irmc_defer)([&]() __VA_ARGS__ )
+#define IRMC_DEFER(_block) IRMC::Defer IRMC_UNIQUE(__irmc_defer)([&]() _block )
