@@ -8,7 +8,7 @@
 namespace IRMC {
 
     constexpr glm::highp_dvec3 BOUNDS_VEC3 = glm::highp_dvec3(BOUNDS);
-    constexpr Float64 EPSILON = 0.03125;
+    constexpr Float64 EPSILON = 0.03125 / 4.0;
 
     static Float64 SnapFloat64(Float64 v) IRMC_RETURN(round(v / EPSILON) * EPSILON)
     static glm::highp_dvec3 SnapVec3(const glm::highp_dvec3& v) IRMC_RETURN(glm::highp_dvec3(SnapFloat64(v.x), SnapFloat64(v.y), SnapFloat64(v.z)))

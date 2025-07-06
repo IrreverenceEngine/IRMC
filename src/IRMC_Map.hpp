@@ -61,8 +61,5 @@ namespace IRMC {
         // Parsing
         std::vector<MToken> m_Tokens;
         UInt64 m_Pos = 0;
-
-        // Entities
-
     };
 }

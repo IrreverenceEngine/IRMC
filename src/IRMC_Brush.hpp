@@ -9,7 +9,7 @@
 
 namespace IRMC {
 
-    constexpr float BOUNDS = 65536.0 / 4.0; // min xyz: -65536, max xyz: 65536
+    constexpr float BOUNDS = 65536.0; // min xyz: -65536, max xyz: 65536
 
     struct Brushside {
         Plane plane;

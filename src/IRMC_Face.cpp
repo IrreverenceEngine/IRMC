@@ -2,19 +2,13 @@
 #include <IRMC_Macro.hpp>
 #include <IRMC_Log.hpp>
 #include <IRMC_Defer.hpp>
+#include <IRMC_Game.hpp>
 
 #include <thirdparty/stb_image.h>
 
-#include <map>
 #include <cstring>
 
 namespace IRMC {
-
-    struct TextureInfo {
-        Int32 width, height;
-    };
-
-    static std::map<std::string, TextureInfo> s_TextureInfos;
 
     Face::Face(const std::vector<glm::vec3>& vertices, const glm::vec3& normal, const char* texname, const glm::highp_dvec4& texu, const glm::highp_dvec4& texv, const glm::highp_dvec2& texscale)
     {
@@ -23,8 +17,7 @@ namespace IRMC {
         m_TexName = texname;
         m_Flags = 0;
 
-        if (!strcmp(texname, "__NODRAW")) {
-            IRMC_MSG(INFO, "NODRAW");
+        if (!strcmp(texname, "NODRAW")) {
             m_Flags |= FLAGS_NODRAW;
         }
 
@@ -33,19 +26,7 @@ namespace IRMC {
         }
 
         if (!(m_Flags & FLAGS_NODRAW)) {
-            TextureInfo texInfo;
-
-            auto it = s_TextureInfos.find(texname);
-            if (it == s_TextureInfos.end()) {
-                Int32 _unused;
-                if (!stbi_info(("bin/" + std::string(texname) + ".png").c_str(), &texInfo.width, &texInfo.height, &_unused)) {
-                    IRMC_MSG(FATAL, "Could not find texture: %s", texname);
-                }
-
-                s_TextureInfos[texname] = texInfo;
-            } else {
-                texInfo = it->second;
-            }
+            Game::TextureInfo texInfo = Game::GetTextureInfo(texname);
 
             glm::highp_dvec2 texSize = { texInfo.width, texInfo.height };
             glm::highp_dvec2 texOffset = { texu.w, texv.w };
