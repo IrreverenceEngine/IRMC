@@ -53,10 +53,8 @@ namespace IRMC {
 
     Brush::Brush(const std::vector<Brushside>& brushsides)
     {
-        m_Brushsides.insert(m_Brushsides.end(), brushsides.begin(), brushsides.end());
-
-        for (UInt64 i = 0; i < m_Brushsides.size(); i++) {
-            Brushside brushside = m_Brushsides[i];
+        for (UInt64 i = 0; i < brushsides.size(); i++) {
+            Brushside brushside = brushsides[i];
             std::vector<glm::highp_dvec3> poly = MakeBigQuad(brushside.plane);
 
             for (UInt64 j = 0; j < brushsides.size(); j++) {
@@ -64,21 +62,32 @@ namespace IRMC {
                     continue;
                 }
 
-                poly = ClipPolygon(poly, m_Brushsides[j].plane);
+                poly = ClipPolygon(poly, brushsides[j].plane);
+            }
+
+            for (auto& p : poly) {
+                p = SnapVec3(p);
             }
 
             std::vector<glm::vec3> vertices;
             if (poly.size() >= 3) {
+                vertices.reserve(poly.size() * 3);
                 for (size_t i = 1; i + 1 < poly.size(); i++) {
-                    vertices.push_back(SnapVec3(poly[0]));
-                    vertices.push_back(SnapVec3(poly[i]));
-                    vertices.push_back(SnapVec3(poly[i + 1]));
+                    vertices.push_back(poly[0]);
+                    vertices.push_back(poly[i]);
+                    vertices.push_back(poly[i + 1]);
                 }
+            }
+
+            m_Convex.reserve(poly.size());
+
+            for (const auto& p : poly) {
+                m_Convex.push_back(p);
             }
 
             Face face(
                 vertices,
-                brushside.plane.normal,
+                brushside.plane,
                 brushside.name.c_str(),
                 brushside.texU,
                 brushside.texV,

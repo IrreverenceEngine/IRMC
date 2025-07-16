@@ -10,10 +10,10 @@
 
 namespace IRMC {
 
-    Face::Face(const std::vector<glm::vec3>& vertices, const glm::vec3& normal, const char* texname, const glm::highp_dvec4& texu, const glm::highp_dvec4& texv, const glm::highp_dvec2& texscale)
+    Face::Face(const std::vector<glm::vec3>& vertices, const Plane& plane, const char* texname, const glm::highp_dvec4& texu, const glm::highp_dvec4& texv, const glm::highp_dvec2& texscale)
     {
         m_Vertices.insert(m_Vertices.end(), vertices.begin(), vertices.end());
-        m_Normal = normal;
+        m_Plane = plane;
         m_TexName = texname;
         m_Flags = 0;
 

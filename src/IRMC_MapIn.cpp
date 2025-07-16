@@ -1,17 +1,17 @@
 #include <IRMC_Map.hpp>
 #include <IRMC_Brush.hpp>
 #include <IRMC_Log.hpp>
+#include <IRMC_Defer.hpp>
 #include <IRMC_QUtils.hpp>
 
 #include <ctype.h>
 
 namespace IRMC {
 
-    Map::Map(const char* mapdata)
+    void Map::LoadMapFromData(const char* mdata)
     {
         // Tokenize
-
-        const char* data = mapdata;
+        const char* data = mdata;
         while (char c = *data++) {
             if (c == ' ') {
                 continue;
@@ -113,7 +113,34 @@ namespace IRMC {
 
         m_Tokens.clear();
     }
-    
+
+    void Map::LoadMapFromFile(const char* path)
+    {
+        char* buffer = nullptr;
+        IRMC_DEFER({ if (buffer) delete[] buffer; });
+
+        FILE* f = fopen(path, "rb");
+
+        if (f) {
+            IRMC::UInt64 length = 0;
+
+            fseek(f, 0, SEEK_END);
+            length = ftell(f);
+            fseek(f, 0, SEEK_SET);
+            buffer = new char[length + 1];
+            if (buffer) {
+                fread(buffer, 1, length, f);
+                buffer[length] = '\0';
+            }
+
+            fclose(f);
+        } else {
+            IRMC_MSG(FATAL, "Couldn't find the map file to compile");
+        }
+
+        LoadMapFromData(buffer);
+    }
+
     void Map::TknExpect(MToken::Type type)
     {
         MToken::Type tkntype = TknPeek().type;
@@ -205,7 +232,8 @@ namespace IRMC {
             };
 
             Brushside brushside {
-                Plane::MakeFromPoints(QVec3ToVec3(p1),
+                Plane::MakeFromPoints(
+                    QVec3ToVec3(p1),
                     QVec3ToVec3(p2),
                     QVec3ToVec3(p3)
                 ),

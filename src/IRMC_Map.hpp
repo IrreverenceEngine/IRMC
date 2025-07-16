@@ -4,9 +4,12 @@
 #include <IRMC_Entity.hpp>
 #include <IRMC_CTypes.hpp>
 
-#include <map>
+#include <fstream>
 
 namespace IRMC {
+
+    struct BMHeader;
+
     struct MToken {
         enum class Type {
             NUMBER,
@@ -41,15 +44,16 @@ namespace IRMC {
         }
     };
 
-
-
     class Map {
     public:
-        Map(const char* mapdata);
+        void LoadMapFromData(const char* data);
+        void LoadMapFromFile(const char* path);
+        void CompileMap(const char* outpath);
 
-        std::vector<Entity> m_Entities;
+        const std::vector<Entity>& GetEntities() const IRMC_RETURN(m_Entities);
 
     private:
+        // Parsing
         void TknExpect(MToken::Type type);
         const MToken& TknPeek();
         const MToken& TknAdvance();
@@ -58,8 +62,16 @@ namespace IRMC {
         void ParseEntity();
         void ParseBrush(Entity& ent);
 
-        // Parsing
         std::vector<MToken> m_Tokens;
         UInt64 m_Pos = 0;
+
+        // Compiling
+        void WriteEntities(std::ofstream& stream, BMHeader& header);
+        void WriteBrushes(std::ofstream& stream, BMHeader& header);
+        void WriteFaces(std::ofstream& stream, BMHeader& header);
+        void WriteVertices(std::ofstream& stream, BMHeader& header);
+
+        std::vector<Entity> m_Entities;
     };
+
 }

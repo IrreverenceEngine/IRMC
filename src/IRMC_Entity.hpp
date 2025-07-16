@@ -17,6 +17,7 @@ namespace IRMC {
 
         void AddBrush(const Brush& brush);
 
+        const std::map<std::string, std::string>& GetKeyValues() const IRMC_RETURN(m_KeyVals)
         const std::vector<Brush>& GetBrushes() const IRMC_RETURN(m_Brushes)
 
     private:

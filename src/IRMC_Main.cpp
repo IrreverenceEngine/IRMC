@@ -7,8 +7,6 @@
 #include <IRMC_Game.hpp>
 
 #include <cstring>
-#include <raylib.h>
-#include <raymath.h>
 
 #include <cstdlib>
 #include <cstdio>
@@ -91,7 +89,7 @@ int main(int argc, char** argv)
     }
 
     if (outputPath.empty()) {
-        outputPath = filePath.relative_path();
+        outputPath = SanitizePath(filePath.parent_path().string() + "/");
     }
 
     if (gamePath.empty()) {
@@ -100,27 +98,9 @@ int main(int argc, char** argv)
 
     IRMC::Game::Init("Irreverence", gamePath.c_str());
 
-    char* buffer = 0;
-    IRMC_DEFER({ if (buffer) delete[] buffer; });
-    IRMC::UInt64 length;
-    FILE* f = fopen(filePath.c_str(), "rb");
-
-    if (f) {
-        fseek(f, 0, SEEK_END);
-        length = ftell(f);
-        fseek(f, 0, SEEK_SET);
-        buffer = new char[length + 1];
-        if (buffer) {
-            fread(buffer, 1, length, f);
-            buffer[length] = '\0';
-        }
-
-        fclose(f);
-    } else {
-        IRMC_MSG(FATAL, "Couldn't find the map file to compile");
-    }
-
-    IRMC::Map myMap(buffer);
+    IRMC::Map myMap;
+    myMap.LoadMapFromFile(filePath.c_str());
+    myMap.CompileMap((outputPath.string() + filePath.stem().string() + ".irbm").c_str());
 
     return 0;
 }
