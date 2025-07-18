@@ -10,6 +10,8 @@
 
 namespace IRMC {
 
+    constexpr float DOWNSCALE = 32.0f; // We have to make the world smoller ( Quake big :C )
+
     constexpr UInt32 MAGIC = 0x6D627269; // irbm
     constexpr UInt32 VERSION = 0;
 
@@ -182,9 +184,9 @@ namespace IRMC {
                 // TODO: Terminate duplicate convex points. We should only have 8 points per cube
                 WriteLE(stream, (UInt32)brush.GetConvex().size());
                 for (const auto& point : brush.GetConvex()) {
-                    WriteLE(stream, (Float32)point.x);
-                    WriteLE(stream, (Float32)point.y);
-                    WriteLE(stream, (Float32)point.z);
+                    WriteLE(stream, (Float32)point.x / DOWNSCALE);
+                    WriteLE(stream, (Float32)point.y / DOWNSCALE);
+                    WriteLE(stream, (Float32)point.z / DOWNSCALE);
                 }
 
                 faceOffset += faceCount;
@@ -200,12 +202,9 @@ namespace IRMC {
         UInt32 startOff = stream.tellp();
 
         UInt32 vertOffset = 0;
-        UInt32 vertCount = 0;
         for (const Entity& ent : m_Entities) {
             for (const Brush& brush : ent.GetBrushes()) {
                 for (const Face& face : brush.GetFaces()) {
-                    vertCount = face.GetVertices().size();
-
                     const Plane& plane = face.GetPlane();
 
                     WriteLE(stream, (Float32)plane.normal.x);
@@ -215,10 +214,15 @@ namespace IRMC {
 
                     WriteLE(stream, (UInt32)face.GetFlags());
 
-                    WriteLE(stream, (UInt32)vertCount);
-                    WriteLE(stream, (UInt32)vertOffset);
+                    if (!(face.GetFlags() & Face::FLAGS_NODRAW)) {
+                        WriteLE(stream, (UInt32)face.GetVertices().size());
+                        WriteLE(stream, (UInt32)vertOffset);
 
-                    vertOffset += vertCount;
+                        vertOffset += face.GetVertices().size();
+                    } else {
+                        WriteLE(stream, (UInt32)0);
+                        WriteLE(stream, (UInt32)vertOffset);
+                    }
                 }
             }
         }
@@ -234,13 +238,18 @@ namespace IRMC {
         glm::vec3 tmpPos;
         glm::vec3 tmpNormal;
         glm::vec2 tmpUV;
+        UInt32 cont = 0;
         for (const Entity& ent : m_Entities) {
             for (const Brush& brush : ent.GetBrushes()) {
                 for (const Face& face : brush.GetFaces()) {
+                    if (face.GetFlags() & Face::FLAGS_NODRAW) {
+                        continue;
+                    }
+
                     for (UInt32 i = 0; i < face.GetVertices().size(); i++) {
-                        tmpPos = face.GetVertices().at(0);
+                        tmpPos = face.GetVertices().at(i) / DOWNSCALE;
                         tmpNormal = face.GetNormal();
-                        tmpUV = face.GetTexcoords().at(0);
+                        tmpUV = face.GetTexcoords().at(i);
 
                         WriteLE(stream, tmpPos.x);
                         WriteLE(stream, tmpPos.y);

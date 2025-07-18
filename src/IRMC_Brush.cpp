@@ -65,7 +65,7 @@ namespace IRMC {
                 poly = ClipPolygon(poly, brushsides[j].plane);
             }
 
-            for (auto& p : poly) {
+            for (glm::highp_dvec3& p : poly) {
                 p = SnapVec3(p);
             }
 
@@ -83,6 +83,18 @@ namespace IRMC {
 
             for (const auto& p : poly) {
                 m_Convex.push_back(p);
+            }
+
+            for (UInt32 i = 0; i < m_Convex.size(); i++) { // TODO: Properly remove dupes
+                for (UInt32 j = 0; j < m_Convex.size(); j++) {
+                    if (m_Convex[i] == m_Convex[j]) {
+                        m_Convex.erase(m_Convex.begin() + j);
+                    }
+                }
+            }
+
+            for (const auto& p : m_Convex) {
+                IRMC_MSG(INFO, "%f, %f, %f", p.x, p.y, p.z);
             }
 
             Face face(
