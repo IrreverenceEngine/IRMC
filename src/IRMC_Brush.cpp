@@ -8,7 +8,7 @@
 namespace IRMC {
 
     constexpr glm::highp_dvec3 BOUNDS_VEC3 = glm::highp_dvec3(BOUNDS);
-    constexpr Float64 EPSILON = 0.03125 / 4.0;
+    constexpr Float64 EPSILON = 0.125;
 
     static Float64 SnapFloat64(Float64 v) IRMC_RETURN(round(v / EPSILON) * EPSILON)
     static glm::highp_dvec3 SnapVec3(const glm::highp_dvec3& v) IRMC_RETURN(glm::highp_dvec3(SnapFloat64(v.x), SnapFloat64(v.y), SnapFloat64(v.z)))
@@ -24,11 +24,11 @@ namespace IRMC {
             Float64 da = plane.DistFromPoint(a);
             Float64 db = plane.DistFromPoint(b);
 
-            if (da >= EPSILON) out.push_back(a);
+            if (da >= EPSILON) out.emplace_back(a);
             if (da * db < EPSILON) {
                 Float64 t = da / (da - db);
                 glm::highp_dvec3 intersection = a + (b - a) * t;
-                out.push_back(intersection);
+                out.emplace_back(intersection);
             }
         }
 
@@ -38,7 +38,7 @@ namespace IRMC {
     static std::vector<glm::highp_dvec3> MakeBigQuad(const Plane& plane)
     {
         glm::highp_dvec3 normal = plane.normal;
-        glm::highp_dvec3 right = (fabs(normal.z) > 0.99) ? glm::highp_dvec3(1, 0, 0) : glm::highp_dvec3(0, 0, 1);
+        glm::highp_dvec3 right = (fabs(normal.z) > 0.99) ? glm::highp_dvec3(1.0, 0, 0) : glm::highp_dvec3(0, 0, 1.0);
         glm::highp_dvec3 up = glm::normalize(glm::cross(normal, right));
         right = glm::normalize(glm::cross(up, normal));
 
@@ -72,17 +72,17 @@ namespace IRMC {
             std::vector<glm::vec3> vertices;
             if (poly.size() >= 3) {
                 vertices.reserve(poly.size() * 3);
-                for (size_t i = 1; i + 1 < poly.size(); i++) {
-                    vertices.push_back(poly[0]);
-                    vertices.push_back(poly[i]);
-                    vertices.push_back(poly[i + 1]);
+                for (UInt64 i = 1; i + 1 < poly.size(); i++) {
+                    vertices.emplace_back(poly[0]);
+                    vertices.emplace_back(poly[i]);
+                    vertices.emplace_back(poly[i + 1]);
                 }
             }
 
             m_Convex.reserve(poly.size());
 
             for (const auto& p : poly) {
-                m_Convex.push_back(p);
+                m_Convex.emplace_back(p);
             }
 
             for (UInt32 i = 0; i < m_Convex.size(); i++) { // TODO: Properly remove dupes
@@ -93,9 +93,9 @@ namespace IRMC {
                 }
             }
 
-            for (const auto& p : m_Convex) {
-                IRMC_MSG(INFO, "%f, %f, %f", p.x, p.y, p.z);
-            }
+            // for (const auto& p : m_Convex) {
+            //     IRMC_MSG(INFO, "%f, %f, %f", p.x, p.y, p.z);
+            // }
 
             Face face(
                 vertices,
@@ -106,7 +106,7 @@ namespace IRMC {
                 brushside.texScale
             );
 
-            m_Faces.push_back(std::move(face));
+            m_Faces.emplace_back(face);
         }
     }
     
@@ -143,7 +143,7 @@ namespace IRMC {
             const glm::vec3& normal = face.GetNormal();
 
             for (UInt8 i = 0; i < 3; i++) {
-                normals.push_back(normal);
+                normals.emplace_back(normal);
             }
         }
 
@@ -161,7 +161,7 @@ namespace IRMC {
             const glm::vec3& normal = face.GetNormal();
 
             for (UInt8 i = 0; i < 3; i++) {
-                normals.push_back(normal);
+                normals.emplace_back(normal);
             }
         }
 

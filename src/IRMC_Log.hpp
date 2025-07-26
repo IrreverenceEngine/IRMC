@@ -10,6 +10,7 @@ namespace IRMC::Log {
         FATAL
     };
 
+    void ColorOutput(bool v);
     void Msg(MsgType type, const char* fmt, ...);
 }
 

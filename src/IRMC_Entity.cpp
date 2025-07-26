@@ -10,7 +10,7 @@ namespace IRMC {
 
     void Entity::AddBrush(const Brush& brush)
     {
-        m_Brushes.push_back(brush);
+        m_Brushes.emplace_back(brush);
     }
 
 }

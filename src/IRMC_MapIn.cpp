@@ -58,7 +58,7 @@ namespace IRMC {
                     mtoken.type = MToken::Type::STRING;
                     mtoken.val.as_str = str;
 
-                    m_Tokens.push_back(mtoken);
+                    m_Tokens.emplace_back(mtoken);
 
                     break;
                 }
@@ -86,14 +86,14 @@ namespace IRMC {
                 mtoken.type = MToken::Type::STRING;
                 mtoken.val.as_str = str;
 
-                m_Tokens.push_back(mtoken);
+                m_Tokens.emplace_back(mtoken);
 
             } else if (isdigit(c) || c == '-' || c == '.') {
                 MToken mtoken;
                 mtoken.type = MToken::Type::NUMBER;
                 mtoken.val.as_f64 = strtod(data - 1, (char**)&data);
 
-                m_Tokens.push_back(mtoken);
+                m_Tokens.emplace_back(mtoken);
             }
         }
 
@@ -171,7 +171,7 @@ namespace IRMC {
             }
         }
 
-        m_Entities.push_back(std::move(ent));
+        m_Entities.emplace_back(ent);
     }
 
     void Map::ParseBrush(Entity& ent)
@@ -240,15 +240,15 @@ namespace IRMC {
                 QVec4ToVec4(texU),
                 QVec4ToVec4(texV),
                 texScale,
-                std::move(texName)
+                texName
             };
 
-            brushsides.push_back(std::move(brushside));
+            brushsides.emplace_back(brushside);
         }
 
         TknExpect(MToken::Type::CLOSED_CURLY);
 
-        Brush brush(std::move(brushsides));
+        Brush brush(brushsides);
         ent.AddBrush(brush);
     }
 

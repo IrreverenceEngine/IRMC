@@ -17,6 +17,8 @@ namespace IRMC {
         m_TexName = texname;
         m_Flags = 0;
 
+        m_Plane.normal = glm::normalize(-m_Plane.normal);
+
         if (!strcmp(texname, "NODRAW")) {
             m_Flags |= FLAGS_NODRAW;
         }

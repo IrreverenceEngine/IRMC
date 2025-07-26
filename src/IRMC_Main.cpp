@@ -69,12 +69,17 @@ int main(int argc, char** argv)
             }
 
             gamePath = SanitizePath(subArg);
+        } else if (str == "-c" || str == "--colored") {
+            IRMC::Log::ColorOutput(true);
         } else if (str == "-h" || str == "--help") {
             IRMC_MSG(INFO, "Usage:\n"
                 "    \"-f\" or \"--file\": File to compile\n"
                 "    \"-o\" or \"--output\": Output compiled map to directory\n"
                 "    \"-g\" or \"--game\": Path to the game's directory, normally one directory behind assets. Example: some/dir/Irreverence\n"
+                "    \"-c\" or \"--colored\": Enable Colored Output\n"
                 "    \"-h\" or \"--help\": Shows this help message :D\n");
+
+            return 0; // Exit Program
         } else {
             filePath = SanitizePath(str);
         }

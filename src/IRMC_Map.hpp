@@ -19,8 +19,7 @@ namespace IRMC {
             OPEN_ROUND,
             CLOSED_ROUND,
             OPEN_SQUARE,
-            CLOSED_SQUARE,
-            END_OF_FILE
+            CLOSED_SQUARE
         } type;
 
         union {

@@ -18,9 +18,20 @@ namespace IRMC::Log {
         { "1;31;4", "FATAL" }
     };
 
+    static bool s_ColorOutput = false;
+
+    void ColorOutput(bool v)
+    {
+        s_ColorOutput = v;
+    }
+
     void Msg(MsgType type, const char* fmt, ...)
     {
-        printf("\033[%sm[IRMC %s]\033[0m - ", s_MsgTypeInfos[(int)type].colorcode, s_MsgTypeInfos[(int)type].prefix);
+        if (s_ColorOutput) {
+            printf("\033[%sm[IRMC %s]\033[0m - ", s_MsgTypeInfos[(UInt32)type].colorcode, s_MsgTypeInfos[(UInt32)type].prefix);
+        } else {
+            printf("[IRMC %s] - ", s_MsgTypeInfos[(UInt32)type].prefix);
+        }
 
         va_list args;
         va_start(args, fmt);
