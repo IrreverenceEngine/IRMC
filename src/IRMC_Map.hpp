@@ -4,11 +4,8 @@
 #include <IRMC_Entity.hpp>
 #include <IRMC_CTypes.hpp>
 
-#include <fstream>
 
 namespace IRMC {
-
-    struct BMHeader;
 
     struct MToken {
         enum class Type {
@@ -45,6 +42,33 @@ namespace IRMC {
 
     class Map {
     public:
+        static constexpr float DOWNSCALE = 32.0f; // We have to make the world smoller ( Quake big :C )
+        static constexpr UInt32 MAGIC = 0x6D627269; // irbm
+        static constexpr UInt32 VERSION = 0;
+
+        enum LumpInfoType {
+            LUMPTYPE_ENTITIES,
+            LUMPTYPE_BRUSHES,
+            LUMPTYPE_FACES,
+            LUMPTYPE_VERTICES,
+            LUMPTYPE_MATERIALTABLE,
+            LUMPTYPE__COUNT
+        };
+
+        // TODO: Remove these structs once the documentation is done
+
+        struct BMLumpInfo {
+            UInt32 offset;
+            UInt32 length;
+        };
+
+        struct BMHeader {
+            UInt32 magic = MAGIC;
+            UInt32 version = VERSION;
+
+            BMLumpInfo lumps[LUMPTYPE__COUNT];
+        };
+
         void LoadMapFromData(const char* data);
         void LoadMapFromFile(const char* path);
         void CompileMap(const char* outpath);
@@ -65,12 +89,14 @@ namespace IRMC {
         UInt64 m_Pos = 0;
 
         // Compiling
-        void WriteEntities(std::ofstream& stream, BMHeader& header);
-        void WriteBrushes(std::ofstream& stream, BMHeader& header);
-        void WriteFaces(std::ofstream& stream, BMHeader& header);
-        void WriteVertices(std::ofstream& stream, BMHeader& header);
+        void WriteEntities(std::vector<char>& stream);
+        void WriteBrushes(std::vector<char>& stream);
+        void WriteFaces(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets);
+        void WriteVertices(std::vector<char>& stream);
+        void WriteMaterialTable(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets);
 
         std::vector<Entity> m_Entities;
+        BMHeader m_Header;
     };
 
 }

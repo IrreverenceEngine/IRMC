@@ -44,7 +44,7 @@ namespace IRMC {
                 texcoord += texOffset;
                 texcoord /= texSize;
 
-                m_Texcoords.push_back(texcoord);
+                m_Texcoords.emplace_back(texcoord);
             }
         }
 

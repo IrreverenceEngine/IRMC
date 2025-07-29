@@ -19,11 +19,12 @@ namespace IRMC {
 
         Face(const std::vector<glm::vec3>& vertices, const Plane& plane, const char* texname, const glm::highp_dvec4& texu, const glm::highp_dvec4& texv, const glm::highp_dvec2& texscale);
 
+        Plane GetPlane() const IRMC_RETURN(m_Plane);
+        glm::vec3 GetNormal() const IRMC_RETURN(m_Plane.normal)
         const std::vector<glm::vec3>& GetVertices() const IRMC_RETURN(m_Vertices)
         const std::vector<glm::vec2>& GetTexcoords() const IRMC_RETURN(m_Texcoords)
-        glm::vec3 GetNormal() const IRMC_RETURN(m_Plane.normal)
 
-        Plane GetPlane() const IRMC_RETURN(m_Plane);
+        const std::string& GetMaterialName() const IRMC_RETURN(m_TexName)
         UInt32 GetFlags() const IRMC_RETURN(m_Flags)
 
     private:

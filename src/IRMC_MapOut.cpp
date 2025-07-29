@@ -6,34 +6,12 @@
 
 #include <SDL3/SDL_endian.h>
 
+#include <vector>
 #include <fstream>
 
 namespace IRMC {
 
-    constexpr float DOWNSCALE = 32.0f; // We have to make the world smoller ( Quake big :C )
-
-    constexpr UInt32 MAGIC = 0x6D627269; // irbm
-    constexpr UInt32 VERSION = 0;
-
-    enum LumpInfoType {
-        LUMPTYPE_ENTITIES,
-        LUMPTYPE_BRUSHES,
-        LUMPTYPE_FACES,
-        LUMPTYPE_VERTICES,
-        LUMPTYPE__COUNT
-    };
-
-    struct BMLumpInfo {
-        UInt32 offset;
-        UInt32 length;
-    };
-
-    struct BMHeader {
-        UInt32 magic;
-        UInt32 version;
-
-        BMLumpInfo lumps[LUMPTYPE__COUNT];
-    };
+    // TODO: Remove these structs once the documentation is done
 
     struct BMEntity {
         UInt32 kvNum; // Number of KV pairs, used to know when to stop reading
@@ -84,6 +62,36 @@ namespace IRMC {
     };
 
     template<typename T>
+    static void WriteLE(std::vector<char>& stream, T value)
+    {
+        if constexpr (sizeof(T) == 4) {
+            UInt32 tmp;
+            memcpy(&tmp, &value, sizeof(tmp));
+            UInt32 v = SDL_Swap32LE(tmp);
+            char* vp = (char*)&v;
+            stream.reserve(stream.size() + sizeof(v));
+            stream.insert(stream.end(), vp, vp + sizeof(v));
+        } else if constexpr (sizeof(T) == 8) {
+            UInt64 tmp;
+            memcpy(&tmp, &value, sizeof(tmp));
+            UInt64 v = SDL_Swap64LE(tmp);
+            char* vp = (char*)&v;
+            stream.reserve(stream.size() + sizeof(v));
+            stream.insert(stream.end(), vp, vp + sizeof(v));
+        } else if constexpr (sizeof(T) == 2) {
+            UInt16 tmp;
+            memcpy(&tmp, &value, sizeof(tmp));
+            UInt16 v = SDL_Swap16LE(tmp);
+            char* vp = (char*)&v;
+            stream.reserve(stream.size() + sizeof(v));
+            stream.insert(stream.end(), vp, vp + sizeof(v));
+        } else {
+            char* vp = (char*)&value;
+            stream.insert(stream.end(), vp, vp + sizeof(value));
+        }
+    }
+
+    template<typename T>
     static void WriteLE(std::ostream& stream, T value) {
         if constexpr (sizeof(T) == 4) {
             UInt32 tmp;
@@ -105,43 +113,53 @@ namespace IRMC {
         }
     }
 
+    static void Write(std::vector<char>& stream, const char* beg, UInt64 len)
+    {
+        stream.insert(stream.end(), beg, beg + len);
+    }
+
+    static void Write(std::ostream& stream, const char* beg, UInt64 len)
+    {
+        stream.write(beg, len);
+    }
+
     void Map::CompileMap(const char* outpath)
     {
-        std::ofstream stream(outpath, std::ios::binary);
+        std::map<std::string, UInt32> matOffsets;
 
-        BMHeader header;
-        header.magic = MAGIC;
-        header.version = VERSION;
-
-        WriteLE(stream, header.magic);
-        WriteLE(stream, header.version);
-
+        std::vector<char> streams[LUMPTYPE__COUNT];
         for (UInt32 i = 0; i < LUMPTYPE__COUNT; i++) {
-            BMLumpInfo& lInfo = header.lumps[i];
-            lInfo = { 0, 0 };
-
-            WriteLE(stream, lInfo.offset);
-            WriteLE(stream, lInfo.length);
+            streams[i].reserve(32768);
         }
 
-        WriteEntities(stream, header);
-        WriteBrushes(stream, header);
-        WriteFaces(stream, header);
-        WriteVertices(stream, header);
+        WriteMaterialTable(streams[LUMPTYPE_MATERIALTABLE], matOffsets);
 
-        // Overwrite Lumps.
-        stream.seekp(offsetof(BMHeader, lumps));
+        WriteEntities(streams[LUMPTYPE_ENTITIES]);
+        WriteBrushes(streams[LUMPTYPE_BRUSHES]);
+        WriteFaces(streams[LUMPTYPE_FACES], matOffsets);
+        WriteVertices(streams[LUMPTYPE_VERTICES]);
+
+        std::ofstream outStream(outpath, std::ios::binary);
+        WriteLE(outStream, m_Header.magic);
+        WriteLE(outStream, m_Header.version);
+
+        UInt32 offset = sizeof(m_Header);
         for (UInt32 i = 0; i < LUMPTYPE__COUNT; i++) {
-            BMLumpInfo& lInfo = header.lumps[i];
-            WriteLE(stream, lInfo.offset);
-            WriteLE(stream, lInfo.length);
+            UInt32 streamLen = streams[i].size();
+            WriteLE(outStream, offset);
+            WriteLE(outStream, streamLen);
+
+            offset += streamLen;
+        }
+
+        for (UInt32 i = 0; i < LUMPTYPE__COUNT; i++) {
+            std::vector<char>& lumpStr = streams[i];
+            outStream.write(lumpStr.data(), lumpStr.size());
         }
     }
 
-    void Map::WriteEntities(std::ofstream& stream, BMHeader& header)
+    void Map::WriteEntities(std::vector<char>& stream)
     {
-        UInt32 startOff = stream.tellp();
-
         UInt32 brushOffset = 0;
         UInt32 brushCount = 0;
         for (const Entity& ent : m_Entities) {
@@ -152,8 +170,8 @@ namespace IRMC {
             WriteLE(stream, (UInt32)kvs.size());
 
             for (const auto& [key, value] : kvs) {
-                stream.write(key.c_str(), key.size() + 1);
-                stream.write(value.c_str(), value.size() + 1);
+                Write(stream, (char*)key.c_str(), key.size() + 1);
+                Write(stream, (char*)value.c_str(), value.size() + 1);
             }
 
             WriteLE(stream, (UInt32)brushCount);
@@ -161,16 +179,10 @@ namespace IRMC {
 
             brushOffset += brushCount;
         }
-
-        UInt32 endOff = stream.tellp();
-
-        header.lumps[LUMPTYPE_ENTITIES] = { startOff, endOff - startOff };
     }
 
-    void Map::WriteBrushes(std::ofstream& stream, BMHeader& header)
+    void Map::WriteBrushes(std::vector<char>& stream)
     {
-        UInt32 startOff = stream.tellp();
-
         UInt32 faceOffset = 0;
         UInt32 faceCount = 0;
         for (const Entity& ent : m_Entities) {
@@ -192,15 +204,10 @@ namespace IRMC {
                 faceOffset += faceCount;
             }
         }
-        UInt32 endOff = stream.tellp();
-
-        header.lumps[LUMPTYPE_BRUSHES] = { startOff, endOff - startOff };
     }
 
-    void Map::WriteFaces(std::ofstream& stream, BMHeader& header)
+    void Map::WriteFaces(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets)
     {
-        UInt32 startOff = stream.tellp();
-
         UInt32 vertOffset = 0;
         for (const Entity& ent : m_Entities) {
             for (const Brush& brush : ent.GetBrushes()) {
@@ -223,18 +230,15 @@ namespace IRMC {
                         WriteLE(stream, (UInt32)0);
                         WriteLE(stream, (UInt32)vertOffset);
                     }
+
+                    WriteLE(stream, (UInt32)matoffsets[face.GetMaterialName()]);
                 }
             }
         }
-        UInt32 endOff = stream.tellp();
-
-        header.lumps[LUMPTYPE_FACES] = { startOff, endOff - startOff };
     }
 
-    void Map::WriteVertices(std::ofstream& stream, BMHeader& header)
+    void Map::WriteVertices(std::vector<char>& stream)
     {
-        UInt32 startOff = stream.tellp();
-
         glm::vec3 tmpPos;
         glm::vec3 tmpNormal;
         glm::vec2 tmpUV;
@@ -266,9 +270,29 @@ namespace IRMC {
                 }
             }
         }
-        UInt32 endOff = stream.tellp();
-
-        header.lumps[LUMPTYPE_VERTICES] = { startOff, endOff - startOff };
     }
 
+    void Map::WriteMaterialTable(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets)
+    {
+        for (const Entity& ent : m_Entities) {
+            for (const Brush& brush : ent.GetBrushes()) {
+                for (const Face& face : brush.GetFaces()) {
+                    if (face.GetFlags() & Face::FLAGS_NODRAW) {
+                        continue;
+                    }
+
+                    const std::string& matName = face.GetMaterialName();
+                    if (matoffsets.find(matName) == matoffsets.end()) {
+                        if (matName.size() > UINT8_MAX) {
+                            IRMC_MSG(FATAL, "Material Name cannot be longer than 255");
+                        }
+
+                        matoffsets[matName] = stream.size();
+                        WriteLE(stream, (UInt8)matName.size());
+                        Write(stream, matName.c_str(), matName.size());
+                    }
+                }
+            }
+        }
+    }
 }
