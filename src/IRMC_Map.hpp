@@ -95,6 +95,11 @@ namespace IRMC {
         void WriteVertices(std::vector<char>& stream);
         void WriteMaterialTable(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets);
 
+        void WriteEntity(std::vector<char>& stream);
+        void WriteBrush(std::vector<char>& stream);
+        void WriteFace(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets);
+        void WriteVertex(std::vector<char>& stream, const Face& face);
+
         std::vector<Entity> m_Entities;
         BMHeader m_Header;
     };

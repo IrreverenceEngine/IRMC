@@ -193,7 +193,6 @@ namespace IRMC {
                 WriteLE(stream, (UInt32)faceCount);
                 WriteLE(stream, (UInt32)faceOffset);
 
-                // TODO: Terminate duplicate convex points. We should only have 8 points per cube
                 WriteLE(stream, (UInt32)brush.GetConvex().size());
                 for (const auto& point : brush.GetConvex()) {
                     WriteLE(stream, (Float32)point.x / DOWNSCALE);
@@ -295,4 +294,49 @@ namespace IRMC {
             }
         }
     }
+
+    void Map::WriteEntity(std::vector<char>& stream)
+    {
+
+    }
+
+    void Map::WriteBrush(std::vector<char>& stream)
+    {
+
+    }
+
+    void Map::WriteFace(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets)
+    {
+        
+    }
+    
+    void Map::WriteVertex(std::vector<char>& stream, const Face& face)
+    {
+        static glm::vec3 tmpPos;
+        static glm::vec3 tmpNormal;
+        static glm::vec2 tmpUV;
+        static UInt32 cont = 0;
+
+        if (face.GetFlags() & Face::FLAGS_NODRAW) {
+            return;
+        }
+
+        for (UInt32 i = 0; i < face.GetVertices().size(); i++) {
+            tmpPos = face.GetVertices().at(i) / DOWNSCALE;
+            tmpNormal = face.GetNormal();
+            tmpUV = face.GetTexcoords().at(i);
+
+            WriteLE(stream, tmpPos.x);
+            WriteLE(stream, tmpPos.y);
+            WriteLE(stream, tmpPos.z);
+
+            WriteLE(stream, tmpNormal.x);
+            WriteLE(stream, tmpNormal.y);
+            WriteLE(stream, tmpNormal.z);
+
+            WriteLE(stream, tmpUV.x);
+            WriteLE(stream, tmpUV.y);
+        }
+    }
+    
 }

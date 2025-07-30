@@ -7,7 +7,7 @@ mkdir -p build
 cd build
 
 echo "[IRMC] - STARTED SETUP"
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DSDL_STATIC=ON
 echo "[IRMC] - FINISHED SETUP"
 
 cd ..

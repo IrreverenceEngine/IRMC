@@ -21,12 +21,6 @@ namespace IRMC {
     public:
         Brush(const std::vector<Brushside>& brushsides);
 
-        std::vector<glm::vec3> GetTotalVertices() const;
-        std::vector<glm::vec3> GetVisibleVertices() const;
-        std::vector<glm::vec3> GetTotalNormals() const;
-        std::vector<glm::vec3> GetVisibleNormals() const;
-        std::vector<glm::vec2> GetVisibleTexcoords() const;
-
         const std::vector<Face>& GetFaces() const IRMC_RETURN(m_Faces)
         const std::vector<glm::vec3>& GetConvex() const IRMC_RETURN(m_Convex)
 
