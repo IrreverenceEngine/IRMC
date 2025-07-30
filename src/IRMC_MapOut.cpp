@@ -134,10 +134,18 @@ namespace IRMC {
 
         WriteMaterialTable(streams[LUMPTYPE_MATERIALTABLE], matOffsets);
 
-        WriteEntities(streams[LUMPTYPE_ENTITIES]);
-        WriteBrushes(streams[LUMPTYPE_BRUSHES]);
-        WriteFaces(streams[LUMPTYPE_FACES], matOffsets);
-        WriteVertices(streams[LUMPTYPE_VERTICES]);
+        for (const Entity& ent : m_Entities) {
+            WriteEntity(streams[LUMPTYPE_ENTITIES], ent);
+
+            for (const Brush& brush : ent.GetBrushes()) {
+                WriteBrush(streams[LUMPTYPE_BRUSHES], brush);
+
+                for (const Face& face : brush.GetFaces()) {
+                    WriteFace(streams[LUMPTYPE_FACES], matOffsets, face);
+                    WriteVertex(streams[LUMPTYPE_VERTICES], face);
+                }
+            }
+        }
 
         std::ofstream outStream(outpath, std::ios::binary);
         WriteLE(outStream, m_Header.magic);
@@ -155,119 +163,6 @@ namespace IRMC {
         for (UInt32 i = 0; i < LUMPTYPE__COUNT; i++) {
             std::vector<char>& lumpStr = streams[i];
             outStream.write(lumpStr.data(), lumpStr.size());
-        }
-    }
-
-    void Map::WriteEntities(std::vector<char>& stream)
-    {
-        UInt32 brushOffset = 0;
-        UInt32 brushCount = 0;
-        for (const Entity& ent : m_Entities) {
-            brushCount = ent.GetBrushes().size();
-
-            const auto& kvs = ent.GetKeyValues();
-
-            WriteLE(stream, (UInt32)kvs.size());
-
-            for (const auto& [key, value] : kvs) {
-                Write(stream, (char*)key.c_str(), key.size() + 1);
-                Write(stream, (char*)value.c_str(), value.size() + 1);
-            }
-
-            WriteLE(stream, (UInt32)brushCount);
-            WriteLE(stream, (UInt32)brushOffset);
-
-            brushOffset += brushCount;
-        }
-    }
-
-    void Map::WriteBrushes(std::vector<char>& stream)
-    {
-        UInt32 faceOffset = 0;
-        UInt32 faceCount = 0;
-        for (const Entity& ent : m_Entities) {
-            for (const Brush& brush : ent.GetBrushes()) {
-                const auto& faces = brush.GetFaces();
-                faceCount = faces.size();
-
-                WriteLE(stream, (UInt32)faceCount);
-                WriteLE(stream, (UInt32)faceOffset);
-
-                WriteLE(stream, (UInt32)brush.GetConvex().size());
-                for (const auto& point : brush.GetConvex()) {
-                    WriteLE(stream, (Float32)point.x / DOWNSCALE);
-                    WriteLE(stream, (Float32)point.y / DOWNSCALE);
-                    WriteLE(stream, (Float32)point.z / DOWNSCALE);
-                }
-
-                faceOffset += faceCount;
-            }
-        }
-    }
-
-    void Map::WriteFaces(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets)
-    {
-        UInt32 vertOffset = 0;
-        for (const Entity& ent : m_Entities) {
-            for (const Brush& brush : ent.GetBrushes()) {
-                for (const Face& face : brush.GetFaces()) {
-                    const Plane& plane = face.GetPlane();
-
-                    WriteLE(stream, (Float32)plane.normal.x);
-                    WriteLE(stream, (Float32)plane.normal.y);
-                    WriteLE(stream, (Float32)plane.normal.z);
-                    WriteLE(stream, (Float32)plane.dist);
-
-                    WriteLE(stream, (UInt32)face.GetFlags());
-
-                    if (!(face.GetFlags() & Face::FLAGS_NODRAW)) {
-                        WriteLE(stream, (UInt32)face.GetVertices().size());
-                        WriteLE(stream, (UInt32)vertOffset);
-
-                        vertOffset += face.GetVertices().size();
-                    } else {
-                        WriteLE(stream, (UInt32)0);
-                        WriteLE(stream, (UInt32)vertOffset);
-                    }
-
-                    WriteLE(stream, (UInt32)matoffsets[face.GetMaterialName()]);
-                }
-            }
-        }
-    }
-
-    void Map::WriteVertices(std::vector<char>& stream)
-    {
-        glm::vec3 tmpPos;
-        glm::vec3 tmpNormal;
-        glm::vec2 tmpUV;
-        UInt32 cont = 0;
-        for (const Entity& ent : m_Entities) {
-            for (const Brush& brush : ent.GetBrushes()) {
-                for (const Face& face : brush.GetFaces()) {
-                    if (face.GetFlags() & Face::FLAGS_NODRAW) {
-                        continue;
-                    }
-
-                    for (UInt32 i = 0; i < face.GetVertices().size(); i++) {
-                        tmpPos = face.GetVertices().at(i) / DOWNSCALE;
-                        tmpNormal = face.GetNormal();
-                        tmpUV = face.GetTexcoords().at(i);
-
-                        WriteLE(stream, tmpPos.x);
-                        WriteLE(stream, tmpPos.y);
-                        WriteLE(stream, tmpPos.z);
-
-                        WriteLE(stream, tmpNormal.x);
-                        WriteLE(stream, tmpNormal.y);
-                        WriteLE(stream, tmpNormal.z);
-
-                        WriteLE(stream, tmpUV.x);
-                        WriteLE(stream, tmpUV.y);
-                    }
-
-                }
-            }
         }
     }
 
@@ -295,19 +190,72 @@ namespace IRMC {
         }
     }
 
-    void Map::WriteEntity(std::vector<char>& stream)
+    void Map::WriteEntity(std::vector<char>& stream, const Entity& ent)
     {
+        static UInt32 brushOffset = 0;
+        static UInt32 brushCount = 0;
 
+        brushCount = ent.GetBrushes().size();
+
+        const auto& kvs = ent.GetKeyValues();
+
+        WriteLE(stream, (UInt32)kvs.size());
+
+        for (const auto& [key, value] : kvs) {
+            Write(stream, (char*)key.c_str(), key.size() + 1);
+            Write(stream, (char*)value.c_str(), value.size() + 1);
+        }
+
+        WriteLE(stream, (UInt32)brushCount);
+        WriteLE(stream, (UInt32)brushOffset);
+
+        brushOffset += brushCount;
     }
 
-    void Map::WriteBrush(std::vector<char>& stream)
+    void Map::WriteBrush(std::vector<char>& stream, const Brush& brush)
     {
+        static UInt32 faceOffset = 0;
+        static UInt32 faceCount = 0;
 
+        faceCount = brush.GetFaces().size();
+
+        WriteLE(stream, (UInt32)faceCount);
+        WriteLE(stream, (UInt32)faceOffset);
+
+        WriteLE(stream, (UInt32)brush.GetConvex().size());
+        for (const auto& point : brush.GetConvex()) {
+            WriteLE(stream, (Float32)point.x / DOWNSCALE);
+            WriteLE(stream, (Float32)point.y / DOWNSCALE);
+            WriteLE(stream, (Float32)point.z / DOWNSCALE);
+        }
+
+        faceOffset += faceCount;
     }
 
-    void Map::WriteFace(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets)
+    void Map::WriteFace(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets, const Face& face)
     {
-        
+        static UInt32 vertOffset = 0;
+
+        const Plane& plane = face.GetPlane();
+
+        WriteLE(stream, (Float32)plane.normal.x);
+        WriteLE(stream, (Float32)plane.normal.y);
+        WriteLE(stream, (Float32)plane.normal.z);
+        WriteLE(stream, (Float32)plane.dist);
+
+        WriteLE(stream, (UInt32)face.GetFlags());
+
+        if (!(face.GetFlags() & Face::FLAGS_NODRAW)) {
+            WriteLE(stream, (UInt32)face.GetVertices().size());
+            WriteLE(stream, (UInt32)vertOffset);
+
+            vertOffset += face.GetVertices().size();
+        } else {
+            WriteLE(stream, (UInt32)0);
+            WriteLE(stream, (UInt32)vertOffset);
+        }
+
+        WriteLE(stream, (UInt32)matoffsets[face.GetMaterialName()]);
     }
     
     void Map::WriteVertex(std::vector<char>& stream, const Face& face)

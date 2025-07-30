@@ -89,15 +89,11 @@ namespace IRMC {
         UInt64 m_Pos = 0;
 
         // Compiling
-        void WriteEntities(std::vector<char>& stream);
-        void WriteBrushes(std::vector<char>& stream);
-        void WriteFaces(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets);
-        void WriteVertices(std::vector<char>& stream);
         void WriteMaterialTable(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets);
 
-        void WriteEntity(std::vector<char>& stream);
-        void WriteBrush(std::vector<char>& stream);
-        void WriteFace(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets);
+        void WriteEntity(std::vector<char>& stream, const Entity& ent);
+        void WriteBrush(std::vector<char>& stream, const Brush& brush);
+        void WriteFace(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets, const Face& face);
         void WriteVertex(std::vector<char>& stream, const Face& face);
 
         std::vector<Entity> m_Entities;
