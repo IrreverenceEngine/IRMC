@@ -4,14 +4,14 @@
 
 namespace IRMC {
 
-    glm::highp_dvec3 QVec3ToVec3(const glm::highp_dvec3& qvec3) IRMC_RETURN(glm::highp_dvec3(qvec3.x, qvec3.z, -qvec3.y))
+    glm::dvec3 QVec3ToVec3(const glm::dvec3& qvec3) IRMC_RETURN(glm::dvec3(qvec3.x, qvec3.z, -qvec3.y))
     glm::dvec4 QVec4ToVec4(const glm::dvec4& qvec4) IRMC_RETURN(glm::dvec4(qvec4.x, qvec4.z, -qvec4.y, qvec4.w))
 
     Float64 QStrToFloat64(const char* qstr) IRMC_RETURN(atof(qstr))
 
     Int32 QStrToInt32(const char* qstr) IRMC_RETURN(atoi(qstr))
 
-    glm::highp_dvec3 QStrToVec3(const char* qstr)
+    glm::dvec3 QStrToVec3(const char* qstr)
     {
         Float64 vals[3] = { 0 };
         vals[0] = QStrToFloat64(qstr);

@@ -181,7 +181,7 @@ namespace IRMC {
         std::vector<Brushside> brushsides;
         while (!TknIsEnd() && TknPeek().type != MToken::Type::CLOSED_CURLY) {
             TknExpect(MToken::Type::OPEN_ROUND);
-            glm::highp_dvec3 p1 = {
+            glm::dvec3 p1 = {
                 TknAdvance().val.as_f64,
                 TknAdvance().val.as_f64,
                 TknAdvance().val.as_f64
@@ -189,7 +189,7 @@ namespace IRMC {
             TknExpect(MToken::Type::CLOSED_ROUND);
 
             TknExpect(MToken::Type::OPEN_ROUND);
-            glm::highp_dvec3 p2 = {
+            glm::dvec3 p2 = {
                 TknAdvance().val.as_f64,
                 TknAdvance().val.as_f64,
                 TknAdvance().val.as_f64
@@ -197,7 +197,7 @@ namespace IRMC {
             TknExpect(MToken::Type::CLOSED_ROUND);
 
             TknExpect(MToken::Type::OPEN_ROUND);
-            glm::highp_dvec3 p3 = {
+            glm::dvec3 p3 = {
                 TknAdvance().val.as_f64,
                 TknAdvance().val.as_f64,
                 TknAdvance().val.as_f64
@@ -226,7 +226,7 @@ namespace IRMC {
 
             Float64 rotation = TknAdvance().val.as_f64; // We don't use this.
 
-            glm::highp_dvec2 texScale = {
+            glm::dvec2 texScale = {
                 TknAdvance().val.as_f64,
                 TknAdvance().val.as_f64
             };

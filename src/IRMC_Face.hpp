@@ -46,7 +46,7 @@ namespace IRMC {
             const char* texname,
             const glm::dvec4& texu,
             const glm::dvec4& texv,
-            const glm::highp_dvec2& texscale
+            const glm::dvec2& texscale
         );
 
         Plane GetPlane() const IRMC_RETURN(m_Plane);

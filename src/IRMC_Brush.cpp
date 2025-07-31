@@ -9,19 +9,19 @@
 
 namespace IRMC {
 
-    constexpr glm::highp_dvec3 BOUNDS_VEC3 = glm::highp_dvec3(BOUNDS);
+    constexpr glm::dvec3 BOUNDS_VEC3 = glm::dvec3(BOUNDS);
     constexpr Float64 EPSILON = 0.125;
 
     static Float64 SnapFloat64(Float64 v) IRMC_RETURN(round(v / EPSILON) * EPSILON)
-    static glm::highp_dvec3 SnapVec3(const glm::highp_dvec3& v) IRMC_RETURN(glm::highp_dvec3(SnapFloat64(v.x), SnapFloat64(v.y), SnapFloat64(v.z)))
+    static glm::dvec3 SnapVec3(const glm::dvec3& v) IRMC_RETURN(glm::dvec3(SnapFloat64(v.x), SnapFloat64(v.y), SnapFloat64(v.z)))
 
-    static std::vector<glm::highp_dvec3> ClipPolygon(const std::vector<glm::highp_dvec3>& poly, const Plane& plane)
+    static std::vector<glm::dvec3> ClipPolygon(const std::vector<glm::dvec3>& poly, const Plane& plane)
     {
-        std::vector<glm::highp_dvec3> out;
+        std::vector<glm::dvec3> out;
 
         for (UInt32 i = 0; i < poly.size(); i++) {
-            glm::highp_dvec3 a = poly[i];
-            glm::highp_dvec3 b = poly[(i + 1) % poly.size()];
+            glm::dvec3 a = poly[i];
+            glm::dvec3 b = poly[(i + 1) % poly.size()];
 
             Float64 da = plane.DistFromPoint(a);
             Float64 db = plane.DistFromPoint(b);
@@ -32,7 +32,7 @@ namespace IRMC {
 
             if (da * db < EPSILON) {
                 Float64 t = da / (da - db);
-                glm::highp_dvec3 intersection = a + (b - a) * t;
+                glm::dvec3 intersection = a + (b - a) * t;
                 out.emplace_back(intersection);
             }
         }
@@ -40,14 +40,14 @@ namespace IRMC {
         return out;
     }
 
-    static void MakeBigQuad(std::vector<glm::highp_dvec3>& poly, const Plane& plane)
+    static void MakeBigQuad(std::vector<glm::dvec3>& poly, const Plane& plane)
     {
-        glm::highp_dvec3 normal = plane.normal;
-        glm::highp_dvec3 right = (fabs(normal.z) > 0.99) ? glm::highp_dvec3(1.0, 0, 0) : glm::highp_dvec3(0, 0, 1.0);
-        glm::highp_dvec3 up = glm::normalize(glm::cross(normal, right));
+        glm::dvec3 normal = plane.normal;
+        glm::dvec3 right = (fabs(normal.z) > 0.99) ? glm::dvec3(1.0, 0, 0) : glm::dvec3(0, 0, 1.0);
+        glm::dvec3 up = glm::normalize(glm::cross(normal, right));
         right = glm::normalize(glm::cross(up, normal));
 
-        glm::highp_dvec3 center = normal * -plane.dist;
+        glm::dvec3 center = normal * -plane.dist;
 
         poly.reserve(4);
         poly.emplace_back(center + (right + up) * BOUNDS_VEC3);
@@ -62,7 +62,7 @@ namespace IRMC {
 
         for (UInt64 i = 0; i < brushsides.size(); i++) {
             Brushside brushside = brushsides[i];
-            std::vector<glm::highp_dvec3> poly;
+            std::vector<glm::dvec3> poly;
             MakeBigQuad(poly, brushside.plane);
 
             for (UInt64 j = 0; j < brushsides.size(); j++) {
@@ -73,7 +73,7 @@ namespace IRMC {
                 poly = ClipPolygon(poly, brushsides[j].plane);
             }
 
-            for (glm::highp_dvec3& p : poly) {
+            for (glm::dvec3& p : poly) {
                 p = SnapVec3(p);
             }
 
@@ -110,6 +110,10 @@ namespace IRMC {
             m_Origin += p;
         }
         m_Origin /= m_Convex.size();
+
+        for (glm::vec3& p : m_Convex) {
+            p -= m_Origin;
+        }
     }
 
 }

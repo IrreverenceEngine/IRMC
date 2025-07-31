@@ -30,7 +30,7 @@ namespace IRMC {
         const Plane& plane, const char* texname,
         const glm::dvec4& texu,
         const glm::dvec4& texv,
-        const glm::highp_dvec2& texscale
+        const glm::dvec2& texscale
     )
     {
         m_Plane = plane;
@@ -59,13 +59,6 @@ namespace IRMC {
                 m_Indices.emplace_back(it->second);
             }
 
-            Game::TextureInfo texInfo = Game::GetTextureInfo(texname);
-
-            glm::highp_dvec2 texSize = { texInfo.width, texInfo.height };
-            glm::highp_dvec2 texOffset = { texu.w, texv.w };
-            glm::highp_dvec3 axisU = glm::highp_dvec3(texu.x, texu.y, texu.z) / texscale.x;
-            glm::highp_dvec3 axisV = glm::highp_dvec3(texv.x, texv.y, texv.z) / texscale.y;
-
             glm::vec3 center(0.0f);
 
             for (const glm::vec3& vert : vertices) {
@@ -74,22 +67,28 @@ namespace IRMC {
 
             center /= static_cast<float>(vertices.size());
 
-            for (const glm::vec3& vert : verts) {
-                glm::vec2 texcoord = {
-                    vert.x * axisU.x + vert.y * axisU.y + vert.z * axisU.z,
-                    vert.x * axisV.x + vert.y * axisV.y + vert.z * axisV.z
-                };
+            Game::TextureInfo texInfo = Game::GetTextureInfo(texname);
+            glm::dvec2 texSize = { texInfo.width, texInfo.height };
+            glm::dvec3 axisU = glm::dvec3(texu.x, texu.y, texu.z) / texscale.x;
+            glm::dvec3 axisV = glm::dvec3(texv.x, texv.y, texv.z) / texscale.y;
+            glm::dvec2 texOffset = { texu.w, texv.w };
 
-                texcoord += texOffset;
+            for (const glm::vec3& vert : verts) {
+                Float64 u = glm::dot(glm::dvec3(vert), axisU) + texOffset.x;
+                Float64 v = glm::dot(glm::dvec3(vert), axisV) + texOffset.y;
+
+                glm::dvec2 texcoord = glm::dvec2(u, v);
                 texcoord /= texSize;
+                texcoord.y = 1.0 - texcoord.y;
 
                 Vertex vertex;
-                vertex.position = SurfaceOffset(vert, -GetNormal(), center, 0.04f);
+                vertex.position = SurfaceOffset(vert, -GetNormal(), center, 0.033f);
                 vertex.normal = m_Plane.normal;
                 vertex.texcoord = texcoord;
 
                 m_Vertices.emplace_back(vertex);
             }
+
         }
     }
 

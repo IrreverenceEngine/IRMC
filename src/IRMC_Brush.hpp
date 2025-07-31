@@ -15,7 +15,7 @@ namespace IRMC {
         Plane plane;
         glm::dvec4 texU;
         glm::dvec4 texV;
-        glm::highp_dvec2 texScale;
+        glm::dvec2 texScale;
         std::string name;
     };
 

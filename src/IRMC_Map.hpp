@@ -41,7 +41,6 @@ namespace IRMC {
 
     class Map {
     public:
-        static constexpr float DOWNSCALE = 1.0f; // We have to make the world smoller ( Quake big :C )
         static constexpr UInt32 MAGIC = 0x6D627269; // irbm
         static constexpr UInt32 VERSION = 0;
 

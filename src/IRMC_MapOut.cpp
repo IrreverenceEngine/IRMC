@@ -174,9 +174,9 @@ namespace IRMC {
 
         WriteLE(stream, (UInt32)brush.GetConvex().size());
         for (const auto& point : brush.GetConvex()) {
-            WriteLE(stream, (Float32)point.x / DOWNSCALE);
-            WriteLE(stream, (Float32)point.y / DOWNSCALE);
-            WriteLE(stream, (Float32)point.z / DOWNSCALE);
+            WriteLE(stream, (Float32)point.x);
+            WriteLE(stream, (Float32)point.y);
+            WriteLE(stream, (Float32)point.z);
         }
 
         faceOffset += faceCount;
@@ -222,9 +222,9 @@ namespace IRMC {
         for (UInt32 i = 0; i < face.GetVertices().size(); i++) {
             const Vertex& vert = face.GetVertices().at(i);
 
-            WriteLE(stream, vert.position.x / DOWNSCALE);
-            WriteLE(stream, vert.position.y / DOWNSCALE);
-            WriteLE(stream, vert.position.z / DOWNSCALE);
+            WriteLE(stream, vert.position.x);
+            WriteLE(stream, vert.position.y);
+            WriteLE(stream, vert.position.z);
 
             WriteLE(stream, vert.normal.x);
             WriteLE(stream, vert.normal.y);

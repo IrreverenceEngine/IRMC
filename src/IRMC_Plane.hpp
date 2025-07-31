@@ -6,11 +6,11 @@
 
 namespace IRMC {
     struct Plane {
-        glm::highp_dvec3 normal;
+        glm::dvec3 normal;
         Float64 dist;
 
-        Float64 DistFromPoint(const glm::highp_dvec3& p) const;
+        Float64 DistFromPoint(const glm::dvec3& p) const;
 
-        static Plane MakeFromPoints(const glm::highp_dvec3& a, const glm::highp_dvec3& b, const glm::highp_dvec3& c);
+        static Plane MakeFromPoints(const glm::dvec3& a, const glm::dvec3& b, const glm::dvec3& c);
     };
 }

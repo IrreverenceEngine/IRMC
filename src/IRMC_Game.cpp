@@ -37,6 +37,10 @@ namespace IRMC::Game {
                 IRMC_MSG(FATAL, "Could not find texture: %s", texname);
             }
 
+            if ((texInfo.width % 2) != 0 || (texInfo.height % 2) != 0) {
+                IRMC_MSG(FATAL, "Texture dimensions should NOT be an odd number, \"%s\" (%d, %d)", texname, texInfo.width, texInfo.height);
+            }
+
             s_TextureInfos[texname] = texInfo;
         } else {
             texInfo = it->second;
