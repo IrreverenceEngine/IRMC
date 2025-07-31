@@ -12,22 +12,6 @@ namespace IRMC {
     constexpr glm::highp_dvec3 BOUNDS_VEC3 = glm::highp_dvec3(BOUNDS);
     constexpr Float64 EPSILON = 0.125;
 
-    struct Vec3Hash {
-        UInt64 operator()(const glm::vec3& v) const {
-            std::hash<float> h;
-            UInt64 hx = h(roundf(v.x * 1e6));
-            UInt64 hy = h(roundf(v.y * 1e6));
-            UInt64 hz = h(roundf(v.z * 1e6));
-            return hx ^ (hy << 1) ^ (hz << 2);
-        }
-    };
-
-    struct Vec3Equal {
-        bool operator()(const glm::vec3& a, const glm::vec3& b) const {
-            return a == b;
-        }
-    };
-
     static Float64 SnapFloat64(Float64 v) IRMC_RETURN(round(v / EPSILON) * EPSILON)
     static glm::highp_dvec3 SnapVec3(const glm::highp_dvec3& v) IRMC_RETURN(glm::highp_dvec3(SnapFloat64(v.x), SnapFloat64(v.y), SnapFloat64(v.z)))
 
@@ -121,6 +105,11 @@ namespace IRMC {
 
         m_Convex.reserve(uniquePoly.size());
         m_Convex.insert(m_Convex.end(), uniquePoly.begin(), uniquePoly.end());
+
+        for (const glm::vec3& p : m_Convex) {
+            m_Origin += p;
+        }
+        m_Origin /= m_Convex.size();
     }
 
 }

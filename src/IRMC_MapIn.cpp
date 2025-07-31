@@ -207,7 +207,7 @@ namespace IRMC {
             std::string texName = TknAdvance().val.as_str;
 
             TknExpect(MToken::Type::OPEN_SQUARE);
-            glm::highp_dvec4 texU = {
+            glm::dvec4 texU = {
                 TknAdvance().val.as_f64,
                 TknAdvance().val.as_f64,
                 TknAdvance().val.as_f64,
@@ -216,7 +216,7 @@ namespace IRMC {
             TknExpect(MToken::Type::CLOSED_SQUARE);
 
             TknExpect(MToken::Type::OPEN_SQUARE);
-            glm::highp_dvec4 texV = {
+            glm::dvec4 texV = {
                 TknAdvance().val.as_f64,
                 TknAdvance().val.as_f64,
                 TknAdvance().val.as_f64,

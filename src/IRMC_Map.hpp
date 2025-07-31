@@ -1,9 +1,8 @@
 #pragma once
 
-#include <IRMC_Brush.hpp>
 #include <IRMC_Entity.hpp>
+#include <IRMC_Face.hpp>
 #include <IRMC_CTypes.hpp>
-
 
 namespace IRMC {
 
@@ -42,7 +41,7 @@ namespace IRMC {
 
     class Map {
     public:
-        static constexpr float DOWNSCALE = 32.0f; // We have to make the world smoller ( Quake big :C )
+        static constexpr float DOWNSCALE = 1.0f; // We have to make the world smoller ( Quake big :C )
         static constexpr UInt32 MAGIC = 0x6D627269; // irbm
         static constexpr UInt32 VERSION = 0;
 
@@ -54,8 +53,6 @@ namespace IRMC {
             LUMPTYPE_MATERIALTABLE,
             LUMPTYPE__COUNT
         };
-
-        // TODO: Remove these structs once the documentation is done
 
         struct BMLumpInfo {
             UInt32 offset;
@@ -93,7 +90,7 @@ namespace IRMC {
 
         void WriteEntity(std::vector<char>& stream, const Entity& ent);
         void WriteBrush(std::vector<char>& stream, const Brush& brush);
-        void WriteFace(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets, const Face& face);
+        void WriteFace(std::vector<char>& stream, const Face& face, std::map<std::string, UInt32>& matoffsets);
         void WriteVertex(std::vector<char>& stream, const Face& face);
 
         std::vector<Entity> m_Entities;

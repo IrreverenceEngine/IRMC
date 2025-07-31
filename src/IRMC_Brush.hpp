@@ -7,18 +7,25 @@
 
 namespace IRMC {
 
+    class Map;
+
     constexpr float BOUNDS = 65536.0; // min xyz: -65536, max xyz: 65536
 
     struct Brushside {
         Plane plane;
-        glm::highp_dvec4 texU;
-        glm::highp_dvec4 texV;
+        glm::dvec4 texU;
+        glm::dvec4 texV;
         glm::highp_dvec2 texScale;
         std::string name;
     };
 
     class Brush {
     public:
+        enum {
+            FLAGS_NONE = 0,
+            FLAGS_NOCONVEX = 1 << 0,
+        };
+
         Brush(const std::vector<Brushside>& brushsides);
 
         const std::vector<Face>& GetFaces() const IRMC_RETURN(m_Faces)
@@ -27,5 +34,7 @@ namespace IRMC {
     private:
         std::vector<Face> m_Faces;
         std::vector<glm::vec3> m_Convex; // For physics, just non-triangulated verts
+        glm::vec3 m_Origin = {};
+        UInt32 m_Flags = FLAGS_NONE;
     };
 }
