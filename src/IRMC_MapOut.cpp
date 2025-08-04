@@ -172,6 +172,11 @@ namespace IRMC {
         WriteLE(stream, (UInt32)faceCount);
         WriteLE(stream, (UInt32)faceOffset);
 
+        const glm::vec3& origin = brush.GetOrigin();
+        WriteLE(stream, (Float32)origin.x);
+        WriteLE(stream, (Float32)origin.y);
+        WriteLE(stream, (Float32)origin.z);
+
         WriteLE(stream, (UInt32)brush.GetConvex().size());
         for (const auto& point : brush.GetConvex()) {
             WriteLE(stream, (Float32)point.x);

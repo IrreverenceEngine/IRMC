@@ -30,6 +30,7 @@ namespace IRMC {
 
         const std::vector<Face>& GetFaces() const IRMC_RETURN(m_Faces)
         const std::vector<glm::vec3>& GetConvex() const IRMC_RETURN(m_Convex)
+        const glm::vec3& GetOrigin() const IRMC_RETURN(m_Origin)
 
     private:
         std::vector<Face> m_Faces;
