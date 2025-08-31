@@ -89,6 +89,7 @@ int main(int argc, char** argv)
         if (filePath.extension() != ".map") {
             IRMC_MSG(FATAL, "File extension has to be .map");
         }
+
     } else {
         IRMC_MSG(FATAL, "Missing file path");
     }

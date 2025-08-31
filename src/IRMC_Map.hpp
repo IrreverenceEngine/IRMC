@@ -50,6 +50,7 @@ namespace IRMC {
             LUMPTYPE_FACES,
             LUMPTYPE_VERTICES,
             LUMPTYPE_MATERIALTABLE,
+            LUMPTYPE_NAVTILES,
             LUMPTYPE__COUNT
         };
 
@@ -87,13 +88,17 @@ namespace IRMC {
         // Compiling
         void WriteMaterialTable(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets);
 
-        void WriteEntity(std::vector<char>& stream, const Entity& ent);
-        void WriteBrush(std::vector<char>& stream, const Brush& brush);
-        void WriteFace(std::vector<char>& stream, const Face& face, std::map<std::string, UInt32>& matoffsets);
-        void WriteVertex(std::vector<char>& stream, const Face& face);
+        void WriteEntity(std::vector<char>& stream, Entity& ent);
+        void WriteBrush(std::vector<char>& stream, Brush& brush);
+        void WriteFace(std::vector<char>& stream, Face& face, std::map<std::string, UInt32>& matoffsets);
+        void WriteVertex(std::vector<char>& stream, Face& face);
+        void WriteNavTiles(std::vector<char>& stream);
 
         std::vector<Entity> m_Entities;
         BMHeader m_Header;
+
+        AABB m_AABB = {};
+        AABB m_NavAABB = {};
     };
 
 }

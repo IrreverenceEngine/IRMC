@@ -7,6 +7,26 @@ namespace IRMC {
         return glm::dot(normal, p) + dist;
     }
 
+    Float64 Plane::DistFromPlane(const Plane& other) const {
+        if (!IsParallelTo(other)) {
+            return 999999999999.0; // TODO: you know what to do
+        }
+
+        return fabs(dist - other.dist);
+    }
+
+    bool Plane::IsParallelTo(const Plane& other) const
+    {
+        glm::vec3 cross = glm::cross(normal, other.normal);
+        return glm::length(cross) < 1e-6f;
+    }
+
+    bool Plane::IsFacingTo(const Plane& other) const
+    {
+        Float32 dot = glm::dot(normal, other.normal);
+        return dot < 0.0;
+    }
+
     Plane Plane::MakeFromPoints(const glm::dvec3& a, const glm::dvec3& b, const glm::dvec3& c)
     {
         Plane plane;

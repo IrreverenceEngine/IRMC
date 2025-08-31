@@ -12,7 +12,7 @@
 
 namespace IRMC {
 
-    glm::vec3 SurfaceOffset(const glm::vec3& v, const glm::vec3& normal, const glm::vec3& center, float offsetAmount) {
+    static glm::vec3 SurfaceOffset(const glm::vec3& v, const glm::vec3& normal, const glm::vec3& center, float offsetAmount) {
         glm::vec3 v_offset = v - center;
         glm::vec3 tangent = v_offset - glm::dot(v_offset, normal) * normal;
 
@@ -30,21 +30,16 @@ namespace IRMC {
         const Plane& plane, const char* texname,
         const glm::dvec4& texu,
         const glm::dvec4& texv,
-        const glm::dvec2& texscale
+        const glm::dvec2& texscale,
+        UInt8 toolflags
     )
     {
         m_Plane = plane;
         m_TexName = texname;
-
+        m_Flags = toolflags;
         m_Plane.normal = glm::normalize(-m_Plane.normal);
 
-        if (!texname) {
-            texname = "__ERROR";
-        }
-
-        if (texname && !strcmp(texname, "NODRAW")) {
-            m_Flags |= FLAGS_NOMESH;
-        }
+        Float32 dPlaneUp = glm::dot(m_Plane.normal, {0, 1, 0});
 
         if (!(m_Flags & FLAGS_NOMESH)) {
             std::unordered_map<glm::vec3, UInt64, Vec3Hash, Vec3Equal> uniqueVerts;
@@ -59,13 +54,13 @@ namespace IRMC {
                 m_Indices.emplace_back(it->second);
             }
 
-            glm::vec3 center(0.0f);
+            glm::vec3 center = {};
 
             for (const glm::vec3& vert : vertices) {
                 center += vert;
             }
 
-            center /= static_cast<float>(vertices.size());
+            center /= (Float32)vertices.size();
 
             Game::TextureInfo texInfo = Game::GetTextureInfo(texname);
             glm::dvec2 texSize = { texInfo.width, texInfo.height };
@@ -74,8 +69,8 @@ namespace IRMC {
             glm::dvec2 texOffset = { texu.w, texv.w };
 
             for (const glm::vec3& vert : verts) {
-                Float64 u = glm::dot(glm::dvec3(vert), axisU) + texOffset.x;
-                Float64 v = glm::dot(glm::dvec3(vert), axisV) + texOffset.y;
+                Float64 u = glm::dot((glm::dvec3)vert, axisU) + texOffset.x;
+                Float64 v = glm::dot((glm::dvec3)vert, axisV) + texOffset.y;
 
                 glm::dvec2 texcoord = glm::dvec2(u, v);
                 texcoord /= texSize;
@@ -88,7 +83,12 @@ namespace IRMC {
 
                 m_Vertices.emplace_back(vertex);
             }
+        }
 
+        m_AABB = { glm::vec3(FLT_MAX), glm::vec3(-FLT_MAX) };
+        for (const Vertex& vert : m_Vertices) {
+            m_AABB.min = glm::min(m_AABB.min, vert.position);
+            m_AABB.max = glm::max(m_AABB.max, vert.position);
         }
     }
 

@@ -14,10 +14,15 @@ add_subdirectory(vendor/glm)
 set(SDL_EXAMPLES OFF)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 
+set(RECASTNAVIGATION_DEMO OFF)
+set(RECASTNAVIGATION_TESTS OFF)
+set(RECASTNAVIGATION_EXAMPLES OFF)
+add_subdirectory(vendor/recastnavigation)
+
 add_executable(irmc ${IRMC_SRC})
 
 target_link_libraries(irmc PRIVATE
-	glm SDL3-static
+	glm SDL3-static RecastNavigation::Recast RecastNavigation::Detour
 )
 
 target_include_directories(irmc PUBLIC
@@ -25,4 +30,6 @@ target_include_directories(irmc PUBLIC
     src/thirdparty
     vendor/glm/glm
     vendor/SDL/include
+    vendor/recastnavigation/Recast/Include
+    vendor/recastnavigation/Detour/Include
 )

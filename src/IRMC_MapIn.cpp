@@ -112,6 +112,21 @@ namespace IRMC {
         }
 
         m_Tokens.clear();
+
+        m_AABB = { glm::vec3(FLT_MAX), glm::vec3(-FLT_MAX) };
+        m_NavAABB = { glm::vec3(FLT_MAX), glm::vec3(-FLT_MAX) };
+        for (auto& ents : m_Entities) {
+            for (auto& brush : ents.GetBrushes()) {
+                const AABB& aabb = brush.GetAABB();
+                m_AABB.max = glm::max(aabb.max, m_AABB.max);
+                m_AABB.min = glm::min(aabb.min, m_AABB.min);
+
+                if (brush.GetFlags() & Brush::FLAGS_WALKABLE) {
+                    m_NavAABB.max = glm::max(aabb.max, m_NavAABB.max);
+                    m_NavAABB.min = glm::min(aabb.min, m_NavAABB.min);
+                }
+            }
+        }
     }
 
     void Map::LoadMapFromFile(const char* path)

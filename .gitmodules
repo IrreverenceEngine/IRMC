@@ -4,3 +4,6 @@
 [submodule "vendor/SDL"]
 	path = vendor/SDL
 	url = https://github.com/libsdl-org/SDL.git
+[submodule "vendor/recastnavigation"]
+	path = vendor/recastnavigation
+	url = https://github.com/recastnavigation/recastnavigation.git

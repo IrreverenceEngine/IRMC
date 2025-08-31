@@ -30,6 +30,10 @@ namespace IRMC::Game {
     {
         TextureInfo texInfo = { 0 };
 
+        if (!texname) {
+            return texInfo;
+        }
+
         auto it = s_TextureInfos.find(texname);
         if (it == s_TextureInfos.end()) {
             Int32 _unused;
