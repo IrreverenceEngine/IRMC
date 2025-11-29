@@ -4,9 +4,27 @@
 #include <IRMC_Defer.hpp>
 #include <IRMC_QUtils.hpp>
 
+#include <IRMC_StageNavmesh.hpp>
+
 #include <ctype.h>
 
 namespace IRMC {
+
+    Map::~Map()
+    {
+        for (UInt8 i = 0; i < Stage::_COUNT; i++) {
+            Stage* stage = m_Stages[i];
+            if (stage) {
+                delete stage;
+                m_Stages[i] = nullptr;
+            }
+        }
+    }
+
+    void Map::EnableStages(UInt8 stages)
+    {
+        m_Stages[Stage::NAVMESH] = (stages & Stage::NAVMESH_FLAG) ? new StageNavmesh : nullptr;
+    }
 
     void Map::LoadMapFromData(const char* mdata)
     {

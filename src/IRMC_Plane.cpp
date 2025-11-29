@@ -9,7 +9,7 @@ namespace IRMC {
 
     Float64 Plane::DistFromPlane(const Plane& other) const {
         if (!IsParallelTo(other)) {
-            return 999999999999.0; // TODO: you know what to do
+            return INFINITY;
         }
 
         return fabs(dist - other.dist);

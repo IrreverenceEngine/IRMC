@@ -3,7 +3,7 @@
 #include <IRMC_Log.hpp>
 #include <IRMC_Defer.hpp>
 
-#include <thirdparty/stb_image.h>
+#include <Thirdparty/stb_image.h>
 
 #include <map>
 #include <string>

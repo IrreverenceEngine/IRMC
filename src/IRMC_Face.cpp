@@ -5,7 +5,7 @@
 #include <IRMC_Game.hpp>
 #include <IRMC_Map.hpp>
 
-#include <thirdparty/stb_image.h>
+#include <Thirdparty/stb_image.h>
 
 #include <cstring>
 #include <unordered_map>

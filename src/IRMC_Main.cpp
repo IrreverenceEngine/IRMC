@@ -105,6 +105,7 @@ int main(int argc, char** argv)
     IRMC::Game::Init("Irreverence", gamePath.c_str());
 
     IRMC::Map myMap;
+    myMap.EnableStages(IRMC::Stage::NAVMESH_FLAG | IRMC::Stage::LIGHTMAP_FLAG);
     myMap.LoadMapFromFile(filePath.c_str());
     myMap.CompileMap((outputPath.string() + filePath.stem().string() + ".irbm").c_str());
 

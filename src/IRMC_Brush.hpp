@@ -31,6 +31,7 @@ namespace IRMC {
         Brush(const std::vector<Brushside>& brushsides);
 
         std::vector<Face>& GetFaces() IRMC_RETURN(m_Faces)
+        const std::vector<Face>& GetFaces() const IRMC_RETURN(m_Faces)
         const std::vector<glm::vec3>& GetConvex() const IRMC_RETURN(m_Convex)
         const glm::vec3& GetOrigin() const IRMC_RETURN(m_Origin)
         const AABB& GetAABB() const IRMC_RETURN(m_AABB)

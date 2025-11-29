@@ -4,6 +4,8 @@
 #include <IRMC_Face.hpp>
 #include <IRMC_CTypes.hpp>
 
+#include <IRMC_Stage.hpp>
+
 namespace IRMC {
 
     struct MToken {
@@ -66,6 +68,10 @@ namespace IRMC {
             BMLumpInfo lumps[LUMPTYPE__COUNT];
         };
 
+        ~Map();
+
+        void EnableStages(UInt8 stages);
+
         void LoadMapFromData(const char* data);
         void LoadMapFromFile(const char* path);
         void CompileMap(const char* outpath);
@@ -74,6 +80,9 @@ namespace IRMC {
 
     private:
         // Parsing
+        std::vector<MToken> m_Tokens;
+        UInt64 m_Pos = 0;
+
         void TknExpect(MToken::Type type);
         const MToken& TknPeek();
         const MToken& TknAdvance();
@@ -82,21 +91,23 @@ namespace IRMC {
         void ParseEntity();
         void ParseBrush(Entity& ent);
 
-        std::vector<MToken> m_Tokens;
-        UInt64 m_Pos = 0;
-
-        // Compiling
-        void WriteMaterialTable(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets);
-
-        void WriteEntity(std::vector<char>& stream, Entity& ent);
-        void WriteBrush(std::vector<char>& stream, Brush& brush);
-        void WriteFace(std::vector<char>& stream, Face& face, std::map<std::string, UInt32>& matoffsets);
-        void WriteVertex(std::vector<char>& stream, Face& face);
-        void WriteNavTiles(std::vector<char>& stream);
-
-        std::vector<Entity> m_Entities;
+        // Writing
         BMHeader m_Header;
 
+        void WriteMaterialTable(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets);
+        void WriteEntity(std::vector<char>& stream, const Entity& ent);
+        void WriteBrush(std::vector<char>& stream, const Brush& brush);
+        void WriteFace(std::vector<char>& stream, const Face& face, std::map<std::string, UInt32>& matoffsets);
+        void WriteVertex(std::vector<char>& stream, const Face& face);
+        void WriteNavTiles(std::vector<char>& stream);
+
+    private:
+        Stage* m_Stages[Stage::_COUNT] = { nullptr };
+
+        MapStageInput m_StageIn = { m_Entities, m_AABB, m_NavAABB };
+        MapStageOutput m_StageOut = {};
+
+        std::vector<Entity> m_Entities;
         AABB m_AABB = {};
         AABB m_NavAABB = {};
     };
