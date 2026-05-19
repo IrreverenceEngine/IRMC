@@ -5,23 +5,8 @@
 #include <IRMC_CTypes.hpp>
 #include <IRMC_Defer.hpp>
 #include <IRMC_Game.hpp>
-
-#include <cstring>
-
-#include <cstdlib>
-#include <cstdio>
+#include <IRMC_Args.hpp>
 #include <filesystem>
-
-std::filesystem::path SanitizePath(const std::filesystem::path& inputPath) {
-    std::filesystem::path absolute = std::filesystem::absolute(inputPath);
-    absolute = absolute.lexically_normal();
-
-    if (absolute != absolute.root_path() && absolute.has_filename() && absolute.filename() == ".") {
-        absolute = absolute.parent_path();
-    }
-
-    return absolute;
-}
 
 int main(int argc, char** argv)
 {
@@ -29,85 +14,45 @@ int main(int argc, char** argv)
         IRMC_MSG(FATAL, "Missing Arguments!");
     }
 
-    std::filesystem::path filePath;
-    std::filesystem::path outputPath;
-    std::filesystem::path gamePath;
+    IRMC::ArgParser parser({
+        { IRMC::ArgVariable::ACTION_SET, IRMC::ArgVariable::TYPE_PATH, "file", "f", "File to compile" },
+        { IRMC::ArgVariable::ACTION_SET, IRMC::ArgVariable::TYPE_PATH, "output", "o", "Output compiled map to directory" },
+        { IRMC::ArgVariable::ACTION_SET, IRMC::ArgVariable::TYPE_PATH, "game", "g", "Path to the game's directory, normally one directory behind assets. Example: Some/Dir/Irreverence" },
+        { IRMC::ArgVariable::ACTION_SET, IRMC::ArgVariable::TYPE_FLAG, "colored", "c", "Enable colored output" },
+        { IRMC::ArgVariable::ACTION_SET, IRMC::ArgVariable::TYPE_FLAG, "help", "h", "Shows this help message :)" }
+    }, argc, argv);
 
-    for (IRMC::UInt32 i = 1; i < argc; i++) {
-        std::string_view str = argv[i];
+    IRMC::Log::ColorOutput(parser.GetVariable("colored").AsBool());
 
-        if (str == "-f" || str == "--file") {
-            if (!filePath.empty()) {
-                IRMC_MSG(FATAL, "-f or --file is already specified");
-            }
-
-            char* subArg = argv[++i];
-            if (!subArg) {
-                IRMC_MSG(FATAL, "Did not specify path when using -f or --file");
-            }
-
-            filePath = SanitizePath(subArg);
-        } else if (str == "-o" || str == "--output") {
-            if (!outputPath.empty()) {
-                IRMC_MSG(FATAL, "-o or --output is already specified");
-            }
-
-            char* subArg = argv[++i];
-            if (!subArg) {
-                IRMC_MSG(FATAL, "Did not specify path when using -o or --output");
-            }
-
-            outputPath = SanitizePath(subArg);
-        } else if (str == "-g" || str == "--game") {
-            if (!gamePath.empty()) {
-                IRMC_MSG(FATAL, "-g or --game is already specified");
-            }
-
-            char* subArg = argv[++i];
-            if (!subArg) {
-                IRMC_MSG(FATAL, "Did not specify path when using -g or --game");
-            }
-
-            gamePath = SanitizePath(subArg);
-        } else if (str == "-c" || str == "--colored") {
-            IRMC::Log::ColorOutput(true);
-        } else if (str == "-h" || str == "--help") {
-            IRMC_MSG(INFO, "Usage:\n"
-                "    \"-f\" or \"--file\": File to compile\n"
-                "    \"-o\" or \"--output\": Output compiled map to directory\n"
-                "    \"-g\" or \"--game\": Path to the game's directory, normally one directory behind assets. Example: some/dir/Irreverence\n"
-                "    \"-c\" or \"--colored\": Enable Colored Output\n"
-                "    \"-h\" or \"--help\": Shows this help message :D\n");
-
-            return 0; // Exit Program
-        } else {
-            filePath = SanitizePath(str);
-        }
+    if (parser.GetVariable("help").AsBool()) {
+        parser.PrintHelp();
     }
+    
+    std::string file = parser.GetVariable("file").AsString();
+    std::string output = parser.GetVariable("output").AsString();
+    std::string game = parser.GetVariable("game").AsString();
 
-    if (!filePath.empty()) {
-        if (filePath.extension() != ".map") {
-            IRMC_MSG(FATAL, "File extension has to be .map");
-        }
-
-    } else {
+    std::filesystem::path filepath = file;
+    if (file.empty()) {
         IRMC_MSG(FATAL, "Missing file path");
+    } else if (filepath.extension() != ".map") {
+        IRMC_MSG(FATAL, "File extension has to be .map");
     }
 
-    if (outputPath.empty()) {
-        outputPath = SanitizePath(filePath.parent_path().string() + "/");
+    if (output.empty()) {
+        output = filepath.parent_path().string();
     }
 
-    if (gamePath.empty()) {
+    if (output.empty()) {
         IRMC_MSG(FATAL, "Missing game path");
     }
 
-    IRMC::Game::Init("Irreverence", gamePath.c_str());
+    IRMC::Game::Init("Irreverence", game.c_str());
 
     IRMC::Map myMap;
     myMap.EnableStages(IRMC::Stage::NAVMESH_FLAG | IRMC::Stage::LIGHTMAP_FLAG);
-    myMap.LoadMapFromFile(filePath.c_str());
-    myMap.CompileMap((outputPath.string() + filePath.stem().string() + ".irbm").c_str());
+    myMap.LoadMapFromFile(file.c_str());
+    myMap.CompileMap((output + "/" + filepath.stem().string() + ".irbm").c_str());
 
     return 0;
 }

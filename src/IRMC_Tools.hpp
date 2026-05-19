@@ -9,7 +9,7 @@
 namespace IRMC::Tool {
 
     enum {
-        NODRAW,
+        NODRAW, // TODO: I think we should rename this
         SKIP,
         AREA,
         TRIGGER,

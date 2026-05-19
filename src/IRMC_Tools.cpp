@@ -28,7 +28,7 @@ namespace IRMC::Tool {
         UInt32 brushFlag;
         UInt32 faceFlag;
     } TOOL_INFOS[] = {
-        /* NODRAW */    { Brush::FLAGS_NONE,                            Face::FLAGS_NOMESH | Face::FLAGS_UNWALKABLE },
+        /* NODRAW */    { Brush::FLAGS_NONE,                        Face::FLAGS_NOMESH | Face::FLAGS_UNWALKABLE },
         /* SKIP */      { Brush::FLAGS_NOCONVEX,                        Face::FLAGS_NOMESH | Face::FLAGS_UNWALKABLE },
         /* AREA */      { Brush::FLAGS_NOCONVEX | Brush::FLAGS_AREA,    Face::FLAGS_NOMESH | Face::FLAGS_UNWALKABLE },
         /* TRIGGER */   { Brush::FLAGS_NONE,                            Face::FLAGS_NOMESH | Face::FLAGS_UNWALKABLE },

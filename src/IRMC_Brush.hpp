@@ -38,6 +38,8 @@ namespace IRMC {
         UInt32 GetFlags() const IRMC_RETURN(m_Flags)
 
     private:
+        void SmootheFaces();
+    
         std::vector<Face> m_Faces;
         std::vector<glm::vec3> m_Convex; // For physics, just non-triangulated verts
         glm::vec3 m_Origin = {};

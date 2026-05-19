@@ -4,8 +4,6 @@
 #include <cstdarg>
 #include <cstdio>
 
-#include <cstdlib>
-
 namespace IRMC::Log {
 
     static struct {
@@ -44,5 +42,4 @@ namespace IRMC::Log {
             abort();
         }
     }
-
 }

@@ -53,7 +53,7 @@ namespace IRMC {
         Plane GetPlane() const IRMC_RETURN(m_Plane);
         glm::vec3 GetNormal() const IRMC_RETURN(m_Plane.normal)
         const std::vector<Vertex>& GetVertices() const IRMC_RETURN(m_Vertices)
-        std::vector<Vertex>& GetVertices2() IRMC_RETURN(m_Vertices)
+        std::vector<Vertex>& GetVertices() IRMC_RETURN(m_Vertices)
         const std::vector<UInt32>& GetIndices() const IRMC_RETURN(m_Indices)
 
         const std::string& GetMaterialName() const IRMC_RETURN(m_TexName)
@@ -62,6 +62,7 @@ namespace IRMC {
 
         private:
         Plane m_Plane;
+        glm::vec2 m_Area;
         std::vector<Vertex> m_Vertices;
         std::vector<UInt32> m_Indices;
 

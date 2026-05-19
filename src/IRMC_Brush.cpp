@@ -3,11 +3,11 @@
 #include <IRMC_Log.hpp>
 #include <IRMC_CTypes.hpp>
 #include <IRMC_Tools.hpp>
+#include <vector>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/vector_angle.hpp>
 
-#include <cstdio>
 #include <unordered_set>
 
 namespace IRMC {
@@ -146,9 +146,6 @@ namespace IRMC {
             m_Faces.emplace_back(face);
         }
 
-        // At the moment, we smoothe normals of faces in a single brush. However that is not enough.
-        // We need to do this for all faces of
-
         m_Convex.reserve(uniquePoly.size());
         m_Convex.insert(m_Convex.end(), uniquePoly.begin(), uniquePoly.end());
 
@@ -167,6 +164,64 @@ namespace IRMC {
 
         if (m_Flags & FLAGS_NOCONVEX) {
             m_Convex.clear();
+        }
+
+        SmootheFaces();
+    }
+
+    void Brush::SmootheFaces()
+    {
+        struct VertexRef {
+            Face* face;
+            glm::vec3 weightedNorm;
+            uint32_t id;
+        };
+
+        std::unordered_map<glm::vec3, std::vector<VertexRef>, Vec3Hash, Vec3Equal> vertexlist;
+
+        for (Face& face : m_Faces) {
+            // WARN: Why the FUCK can there be a face with less than 3 vertices. Need to look into it.
+            if ((face.GetFlags() & Face::FLAGS_NOMESH) || (face.GetFlags() & Face::FLAGS_NORENDER) || face.GetVertices().size() < 3) {
+                continue;
+            }
+            
+            const glm::vec3& v0 = face.GetVertices()[0].position;
+            const glm::vec3& v1 = face.GetVertices()[1].position;
+            const glm::vec3& v2 = face.GetVertices()[2].position;
+            const glm::vec3 weightedNorm = glm::cross(v1 - v0, v2 - v0);
+
+            for (UInt32 i = 0; i < face.GetVertices().size(); i++) {
+                const Vertex& vert = face.GetVertices()[i];
+                vertexlist[vert.position].push_back({ &face, weightedNorm, i });
+            }
+        }
+
+        float maxAngle = 45.0f;
+        float minDot = cos(glm::radians(maxAngle));
+
+        // The system here is complicated asf so let me TLDR a bit
+        // Basically, we average over the faces that are facing the correct direction. We do this by removing majority of the angle check failures. After normalizing the sum of those values, we get the desired result.
+        for (auto& kv : vertexlist) {
+            auto& refs = kv.second;
+
+            if (refs.size() == 1) {
+                continue;
+            }
+
+            for (VertexRef& refA : refs) {
+                glm::vec3 accum = {};
+                glm::vec3 normalA = refA.face->GetNormal();
+
+                for (VertexRef& refB : refs) {
+                    glm::vec3 normalB = refB.face->GetNormal();
+
+                    if (glm::dot(normalA, normalB) >= minDot) {
+                        accum += refB.weightedNorm;
+                    }
+                }
+
+                refA.face->GetVertices()[refA.id].normal = glm::normalize(accum);
+            }
         }
     }
 

@@ -7,24 +7,9 @@
 
 #include <Thirdparty/stb_image.h>
 
-#include <cstring>
 #include <unordered_map>
 
 namespace IRMC {
-
-    static glm::vec3 SurfaceOffset(const glm::vec3& v, const glm::vec3& normal, const glm::vec3& center, float offsetAmount) {
-        glm::vec3 v_offset = v - center;
-        glm::vec3 tangent = v_offset - glm::dot(v_offset, normal) * normal;
-
-        float tangentLen = glm::length(tangent);
-        if (tangentLen < 1e-6f) {
-            return v;
-        }
-
-        glm::vec3 direction = tangent / tangentLen;
-
-        return v + direction * offsetAmount;
-    }
 
     Face::Face(const std::vector<glm::vec3>& vertices,
         const Plane& plane, const char* texname,
@@ -39,28 +24,22 @@ namespace IRMC {
         m_Flags = toolflags;
         m_Plane.normal = glm::normalize(-m_Plane.normal);
 
-        Float32 dPlaneUp = glm::dot(m_Plane.normal, {0, 1, 0});
-
         if (!(m_Flags & FLAGS_NOMESH)) {
             std::unordered_map<glm::vec3, UInt64, Vec3Hash, Vec3Equal> uniqueVerts;
             std::vector<glm::vec3> verts;
 
-            for (const auto& v : vertices) {
+            glm::vec3 center = {};
+            for (const glm::vec3& v : vertices) {
                 auto [it, inserted] = uniqueVerts.try_emplace(v, verts.size());
                 if (inserted) {
                     verts.push_back(v);
+                    center += v;
                 }
 
                 m_Indices.emplace_back(it->second);
             }
 
-            glm::vec3 center = {};
-
-            for (const glm::vec3& vert : vertices) {
-                center += vert;
-            }
-
-            center /= (Float32)vertices.size();
+            center /= (Float32)verts.size();
 
             Game::TextureInfo texInfo = Game::GetTextureInfo(texname);
             glm::dvec2 texSize = { texInfo.width, texInfo.height };
@@ -77,7 +56,7 @@ namespace IRMC {
                 texcoord.y = 1.0 - texcoord.y;
 
                 Vertex vertex;
-                vertex.position = SurfaceOffset(vert, -GetNormal(), center, 0.033f);
+                vertex.position = vert;
                 vertex.normal = m_Plane.normal;
                 vertex.texcoord = texcoord;
 
