@@ -7,15 +7,10 @@ namespace IRMC {
 
     class Stage {
     public:
-        enum {
-            NAVMESH,
-            LIGHTMAP,
+        enum Level : UInt8 {
+            LEVEL_NAVMESH,
+            LEVEL_LIGHTMAP,
             _COUNT
-        };
-
-        enum {
-            NAVMESH_FLAG = 1 << NAVMESH,
-            LIGHTMAP_FLAG = 1 << LIGHTMAP
         };
 
         static constexpr const char* NAMES[_COUNT] = {

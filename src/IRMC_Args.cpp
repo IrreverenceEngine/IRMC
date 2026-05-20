@@ -26,11 +26,11 @@ namespace IRMC {
         return p;
     }  
 
-    ArgVariable::ArgVariable(Action action, Type type, const char* name, const char* character, const char* description) :
-        m_Action(action), m_Type(type), m_Name(name), m_Short(character), m_Desc(description)
+    ArgVariable::ArgVariable(Type type, const char* name, const char* character, const char* description) :
+        m_Type(type), m_Name(name), m_Short(character), m_Desc(description)
     {
         switch (type) {
-        case TYPE_FLAG: m_Action = ACTION_SET;
+        case TYPE_FLAG:
         case TYPE_NUMBER:
         {
             m_Val = 0.0;
@@ -48,18 +48,17 @@ namespace IRMC {
 
     void ArgVariable::Perform(const ArgValue& val)
     {        
-        switch (m_Action) {
-        case ACTION_SET:
-        {
-            PerformSet(val);
-            break;
-        }
-        case ACTION_ADD:
+        switch (m_Type) {
+        case TYPE_LIST:
         {
             PerformAdd(val);
             break;
         }
-        default: break;
+        default:
+        {
+            PerformSet(val);
+            break;
+        }
         }
     }
     
@@ -268,7 +267,7 @@ namespace IRMC {
             valcount = 0;
 
             while (!TknIsEnd() && TknPeek().kind != Token::KIND_NAMESIG && TknPeek().kind != Token::KIND_SNAMESIG) {
-                if (argval->GetAction() == ArgVariable::ACTION_SET && valcount == 1) {
+                if (argval->GetType() != ArgVariable::TYPE_FLAG && valcount == 1) {
                     break;
                 }
                 

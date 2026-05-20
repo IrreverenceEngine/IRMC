@@ -5,6 +5,7 @@
 #include <IRMC_QUtils.hpp>
 
 #include <IRMC_StageNavmesh.hpp>
+#include <IRMC_StageLightmap.hpp>
 
 #include <ctype.h>
 
@@ -21,9 +22,16 @@ namespace IRMC {
         }
     }
 
-    void Map::EnableStages(UInt8 stages)
+    void Map::EnableStage(Stage::Level stage)
     {
-        m_Stages[Stage::NAVMESH] = (stages & Stage::NAVMESH_FLAG) ? new StageNavmesh : nullptr;
+        Stage* stageobj = nullptr;
+        switch (stage) {
+        case Stage::LEVEL_NAVMESH: stageobj = new StageNavmesh; break;
+        case Stage::LEVEL_LIGHTMAP: stageobj = new StageLightmap; break;
+        default: return;
+        };
+        
+        m_Stages[stage] = stageobj;
     }
 
     void Map::LoadMapFromData(const char* mdata)

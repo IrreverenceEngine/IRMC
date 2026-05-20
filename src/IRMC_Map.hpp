@@ -70,7 +70,7 @@ namespace IRMC {
 
         ~Map();
 
-        void EnableStages(UInt8 stages);
+        void EnableStage(Stage::Level stage);
 
         void LoadMapFromData(const char* data);
         void LoadMapFromFile(const char* path);

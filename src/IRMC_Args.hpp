@@ -18,28 +18,22 @@ namespace IRMC {
 
     class ArgVariable {
     public:
-        enum Action : UInt8 {
-            ACTION_UNKNOWN,
-            ACTION_SET,
-            ACTION_ADD
-        };
-
         enum Type : UInt8 {
             TYPE_UNKNOWN,
             TYPE_FLAG,
             TYPE_NUMBER,
             TYPE_PATH,
-            TYPE_STRING
+            TYPE_STRING,
+            TYPE_LIST
         };
 
         ArgVariable() {}
-        ArgVariable(Action action, Type type, const char* name, const char* sname = nullptr, const char* desc = nullptr);
+        ArgVariable(Type type, const char* name, const char* sname = nullptr, const char* desc = nullptr);
 
         void Perform(const ArgValue& val);
         void PerformSet(const ArgValue& val);
         void PerformAdd(const ArgValue& val);
 
-        Action GetAction() const IRMC_RETURN(m_Action)
         Type GetType() const IRMC_RETURN(m_Type)
         const char* GetName() const IRMC_RETURN(m_Name)
         const char* GetShort() const IRMC_RETURN(m_Short)
@@ -51,7 +45,6 @@ namespace IRMC {
         std::string AsString() const IRMC_RETURN(std::get<std::string>(m_Val))
 
     private:
-        Action m_Action = ACTION_UNKNOWN;
         Type m_Type = TYPE_UNKNOWN;
 
         const char* m_Name = nullptr;
