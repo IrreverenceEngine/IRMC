@@ -1,6 +1,6 @@
 #pragma once
 
-#include <IRMC_CTypes.hpp>
+#include <IRX_Common.hpp>
 
 namespace IRMC::Game {
     struct TextureInfo {

@@ -1,7 +1,7 @@
 #pragma once
 
+#include <IRX_Common.hpp>
 #include <IRMC_Plane.hpp>
-#include <IRMC_Macro.hpp>
 
 #include <glm.hpp>
 
@@ -28,7 +28,7 @@ namespace IRMC {
     };
 
     struct Vec3Equal {
-        bool operator()(const glm::vec3& a, const glm::vec3& b) const IRMC_RETURN(a == b)
+        bool operator()(const glm::vec3& a, const glm::vec3& b) const IRX_RETURN(a == b)
     };
 
     class Face {
@@ -50,15 +50,15 @@ namespace IRMC {
             UInt8 toolflags
         );
 
-        Plane GetPlane() const IRMC_RETURN(m_Plane);
-        glm::vec3 GetNormal() const IRMC_RETURN(m_Plane.normal)
-        const std::vector<Vertex>& GetVertices() const IRMC_RETURN(m_Vertices)
-        std::vector<Vertex>& GetVertices() IRMC_RETURN(m_Vertices)
-        const std::vector<UInt32>& GetIndices() const IRMC_RETURN(m_Indices)
+        Plane GetPlane() const IRX_RETURN(m_Plane);
+        glm::vec3 GetNormal() const IRX_RETURN(m_Plane.normal)
+        const std::vector<Vertex>& GetVertices() const IRX_RETURN(m_Vertices)
+        std::vector<Vertex>& GetVertices() IRX_RETURN(m_Vertices)
+        const std::vector<UInt32>& GetIndices() const IRX_RETURN(m_Indices)
 
-        const std::string& GetMaterialName() const IRMC_RETURN(m_TexName)
-        UInt32 GetFlags() const IRMC_RETURN(m_Flags)
-        AABB GetAABB() const IRMC_RETURN(m_AABB)
+        const std::string& GetMaterialName() const IRX_RETURN(m_TexName)
+        UInt32 GetFlags() const IRX_RETURN(m_Flags)
+        AABB GetAABB() const IRX_RETURN(m_AABB)
 
         private:
         Plane m_Plane;

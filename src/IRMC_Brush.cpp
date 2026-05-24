@@ -1,8 +1,8 @@
+#include <IRX_Common.hpp>
+
 #include <IRMC_Brush.hpp>
-#include <IRMC_QUtils.hpp>
-#include <IRMC_Log.hpp>
-#include <IRMC_CTypes.hpp>
 #include <IRMC_Tools.hpp>
+
 #include <vector>
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -15,8 +15,8 @@ namespace IRMC {
     constexpr glm::dvec3 BOUNDS_VEC3 = glm::dvec3(BOUNDS);
     constexpr Float64 EPSILON = 0.03125;
 
-    static Float64 SnapFloat64(Float64 v) IRMC_RETURN(round(v / EPSILON) * EPSILON)
-    static glm::dvec3 SnapVec3(const glm::dvec3& v) IRMC_RETURN(glm::dvec3(SnapFloat64(v.x), SnapFloat64(v.y), SnapFloat64(v.z)))
+    static Float64 SnapFloat64(Float64 v) IRX_RETURN(round(v / EPSILON) * EPSILON)
+    static glm::dvec3 SnapVec3(const glm::dvec3& v) IRX_RETURN(glm::dvec3(SnapFloat64(v.x), SnapFloat64(v.y), SnapFloat64(v.z)))
 
     static std::vector<glm::dvec3> ClipPolygon(const std::vector<glm::dvec3>& poly, const Plane& plane)
     {
@@ -188,7 +188,7 @@ namespace IRMC {
             const glm::vec3& v0 = face.GetVertices()[0].position;
             const glm::vec3& v1 = face.GetVertices()[1].position;
             const glm::vec3& v2 = face.GetVertices()[2].position;
-            const glm::vec3 weightedNorm = glm::cross(v1 - v0, v2 - v0);
+            const glm::vec3 weightedNorm = face.GetNormal()/* glm::cross(v1 - v0, v2 - v0) */;
 
             for (UInt32 i = 0; i < face.GetVertices().size(); i++) {
                 const Vertex& vert = face.GetVertices()[i];
@@ -196,7 +196,7 @@ namespace IRMC {
             }
         }
 
-        float maxAngle = 45.0f;
+        float maxAngle = 60.0f;
         float minDot = cos(glm::radians(maxAngle));
 
         // The system here is complicated asf so let me TLDR a bit

@@ -1,9 +1,7 @@
 #include <IRMC_StageNavmesh.hpp>
 #include <IRMC_Map.hpp>
 #include <IRMC_Brush.hpp>
-#include <IRMC_Log.hpp>
 #include <IRMC_Write.hpp>
-#include <IRMC_Defer.hpp>
 
 #include <Recast.h>
 #include <DetourNavMesh.h>
@@ -127,7 +125,7 @@ namespace IRMC {
                 tileAABB.max.y = cfg.bmax[1];
 
                 rcHeightfield* hfield = rcAllocHeightfield();
-                IRMC_DEFER({ rcFreeHeightField(hfield); });
+                IRX_DEFER({ rcFreeHeightField(hfield); });
 
                 rcCreateHeightfield(
                     &ctx,
@@ -173,7 +171,7 @@ namespace IRMC {
                 rcFilterWalkableLowHeightSpans(&ctx, cfg.walkableHeight, *hfield);
 
                 rcCompactHeightfield* chf = rcAllocCompactHeightfield();
-                IRMC_DEFER({ rcFreeCompactHeightfield(chf); });
+                IRX_DEFER({ rcFreeCompactHeightfield(chf); });
                 rcBuildCompactHeightfield(&ctx, cfg.walkableHeight, cfg.walkableClimb, *hfield, *chf);
 
                 rcErodeWalkableArea(&ctx, cfg.walkableRadius, *chf);
@@ -182,15 +180,15 @@ namespace IRMC {
                 rcBuildRegions(&ctx, *chf, cfg.borderSize, cfg.minRegionArea, cfg.mergeRegionArea);
 
                 rcContourSet* cset = rcAllocContourSet();
-                IRMC_DEFER({ rcFreeContourSet(cset); });
+                IRX_DEFER({ rcFreeContourSet(cset); });
                 rcBuildContours(&ctx, *chf, cfg.maxSimplificationError, cfg.maxEdgeLen, *cset);
 
                 rcPolyMesh* pmesh = rcAllocPolyMesh();
-                IRMC_DEFER({ rcFreePolyMesh(pmesh); });
+                IRX_DEFER({ rcFreePolyMesh(pmesh); });
                 rcBuildPolyMesh(&ctx, *cset, cfg.maxVertsPerPoly, *pmesh);
 
                 rcPolyMeshDetail* dmesh = rcAllocPolyMeshDetail();
-                IRMC_DEFER({ rcFreePolyMeshDetail(dmesh); });
+                IRX_DEFER({ rcFreePolyMeshDetail(dmesh); });
                 rcBuildPolyMeshDetail(&ctx, *pmesh, *chf, cfg.detailSampleDist, cfg.detailSampleMaxError, *dmesh);
 
                 std::vector<UInt8> polyAreas(pmesh->npolys, RC_WALKABLE_AREA);

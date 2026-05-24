@@ -1,45 +1,12 @@
 #pragma once
 
+#include <IRX_Common.hpp>
 #include <IRMC_Entity.hpp>
 #include <IRMC_Face.hpp>
-#include <IRMC_CTypes.hpp>
-
 #include <IRMC_Stage.hpp>
 
 namespace IRMC {
 
-    struct MToken {
-        enum class Type {
-            NUMBER,
-            STRING,
-            OPEN_CURLY,
-            CLOSED_CURLY,
-            OPEN_ROUND,
-            CLOSED_ROUND,
-            OPEN_SQUARE,
-            CLOSED_SQUARE
-        } type;
-
-        union {
-            Float64 as_f64;
-            char* as_str;
-        } val;
-
-        static const char* TypeName(MToken::Type type)
-        {
-            switch (type) {
-            case MToken::Type::NUMBER: return "NUMBER";
-            case MToken::Type::STRING: return "STRING";
-            case MToken::Type::OPEN_CURLY: return "OPEN_CURLY";
-            case MToken::Type::CLOSED_CURLY: return "CLOSED_CURLY";
-            case MToken::Type::OPEN_ROUND: return "OPEN_ROUND";
-            case MToken::Type::CLOSED_ROUND: return "CLOSED_ROUND";
-            case MToken::Type::OPEN_SQUARE: return "OPEN_SQUARE";
-            case MToken::Type::CLOSED_SQUARE: return "CLOSED_SQUARE";
-            default: return "UNKNOWN";
-            }
-        }
-    };
 
     class Map {
     public:
@@ -76,20 +43,55 @@ namespace IRMC {
         void LoadMapFromFile(const char* path);
         void CompileMap(const char* outpath);
 
-        const std::vector<Entity>& GetEntities() const IRMC_RETURN(m_Entities);
+        const std::vector<Entity>& GetEntities() const IRX_RETURN(m_Entities);
 
     private:
+        struct Token {
+            enum class Type {
+                NUMBER,
+                STRING,
+                OPEN_CURLY,
+                CLOSED_CURLY,
+                OPEN_ROUND,
+                CLOSED_ROUND,
+                OPEN_SQUARE,
+                CLOSED_SQUARE
+            } type;
+
+            union {
+                Float64 as_f64;
+                char* as_str;
+            } val;
+
+            static const char* TypeName(Token::Type type)
+            {
+                switch (type) {
+                case Token::Type::NUMBER: return "NUMBER";
+                case Token::Type::STRING: return "STRING";
+                case Token::Type::OPEN_CURLY: return "OPEN_CURLY";
+                case Token::Type::CLOSED_CURLY: return "CLOSED_CURLY";
+                case Token::Type::OPEN_ROUND: return "OPEN_ROUND";
+                case Token::Type::CLOSED_ROUND: return "CLOSED_ROUND";
+                case Token::Type::OPEN_SQUARE: return "OPEN_SQUARE";
+                case Token::Type::CLOSED_SQUARE: return "CLOSED_SQUARE";
+                default: return "UNKNOWN";
+                }
+            }
+        };
+
         // Parsing
-        std::vector<MToken> m_Tokens;
+        std::vector<Token> m_Tokens;
         UInt64 m_Pos = 0;
 
-        void TknExpect(MToken::Type type);
-        const MToken& TknPeek();
-        const MToken& TknAdvance();
-        bool TknIsEnd();
-
+        void Tokenize(const char* mdata);
+        void Parse();
         void ParseEntity();
         void ParseBrush(Entity& ent);
+
+        void TknExpect(Token::Type type);
+        const Token& TknPeek() const IRX_RETURN(m_Tokens[m_Pos])
+        const Token& TknAdvance() IRX_RETURN(m_Tokens[m_Pos++])
+        bool TknIsEnd() const IRX_RETURN(m_Pos >= m_Tokens.size())
 
         // Writing
         BMHeader m_Header;

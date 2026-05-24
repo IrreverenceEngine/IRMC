@@ -1,14 +1,13 @@
 #pragma once
 
+#include <IRX_Common.hpp>
 #include <IRMC_Stage.hpp>
-#include <IRMC_Macro.hpp>
-#include <IRMC_Log.hpp>
 
 namespace IRMC {
     class StageLightmap : public Stage {
     public:
 
-        bool Run(const MapStageInput& in, MapStageOutput& out) override IRMC_UNIMPLEMENTED;
+        bool Run(const MapStageInput& in, MapStageOutput& out) override IRX_UNIMPLEMENTED;
 
     };
 }

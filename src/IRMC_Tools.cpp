@@ -53,7 +53,7 @@ namespace IRMC::Tool {
         }
     }
 
-    UInt32 GetBrushFlags(UInt8 tool) IRMC_RETURN((tool <= _COUNT) ? TOOL_INFOS[tool].brushFlag : Brush::FLAGS_NONE)
-    UInt32 GetFaceFlags(UInt8 tool) IRMC_RETURN((tool <= _COUNT) ? TOOL_INFOS[tool].faceFlag : Face::FLAGS_NONE)
+    UInt32 GetBrushFlags(UInt8 tool) IRX_RETURN((tool <= _COUNT) ? TOOL_INFOS[tool].brushFlag : Brush::FLAGS_NONE)
+    UInt32 GetFaceFlags(UInt8 tool) IRX_RETURN((tool <= _COUNT) ? TOOL_INFOS[tool].faceFlag : Face::FLAGS_NONE)
 
 }

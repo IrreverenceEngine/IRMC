@@ -1,8 +1,6 @@
+#include <IRX_Common.hpp>
 #include <IRMC_Map.hpp>
 #include <IRMC_Brush.hpp>
-#include <IRMC_Log.hpp>
-#include <IRMC_Defer.hpp>
-#include <IRMC_QUtils.hpp>
 #include <IRMC_Write.hpp>
 
 #include <vector>
@@ -20,7 +18,7 @@ namespace IRMC {
             }
 
             if (!stage->Run(m_StageIn, m_StageOut)) {
-                IRMC_MSG(ERROR, "Failed running stage: \"%s\"", Stage::NAMES[i]);
+                IRX_MSG(ERROR, "Failed running stage: \"%s\"", Stage::NAMES[i]);
                 return;
             }
         }
@@ -80,7 +78,7 @@ namespace IRMC {
                     const std::string& matName = face.GetMaterialName();
                     if (matoffsets.find(matName) == matoffsets.end()) {
                         if (matName.size() > UINT8_MAX) {
-                            IRMC_MSG(FATAL, "Material Name cannot be longer than 255");
+                            IRX_MSG(FATAL, "Material Name cannot be longer than 255");
                         }
 
                         matoffsets[matName] = stream.size();

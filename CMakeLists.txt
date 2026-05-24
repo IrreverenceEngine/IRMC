@@ -9,7 +9,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 file(GLOB_RECURSE IRMC_SRC CONFIGURE_DEPENDS src/*.cpp)
 
-add_subdirectory(vendor/glm)
+add_subdirectory(vendor/IRX)
 
 set(SDL_EXAMPLES OFF)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
@@ -22,13 +22,13 @@ add_subdirectory(vendor/recastnavigation)
 add_executable(irmc ${IRMC_SRC})
 
 target_link_libraries(irmc PRIVATE
-	glm SDL3-static RecastNavigation::Recast RecastNavigation::Detour
+    glm::glm SDL3-static RecastNavigation::Recast RecastNavigation::Detour irx
 )
 
 target_include_directories(irmc PUBLIC
     src/
     src/thirdparty
-    vendor/glm/glm
+    irx
     vendor/SDL/include
     vendor/recastnavigation/Recast/Include
     vendor/recastnavigation/Detour/Include
