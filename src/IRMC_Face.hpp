@@ -60,7 +60,7 @@ namespace IRMC {
         UInt32 GetFlags() const IRX_RETURN(m_Flags)
         AABB GetAABB() const IRX_RETURN(m_AABB)
 
-        private:
+    private:
         Plane m_Plane;
         glm::vec2 m_Area;
         std::vector<Vertex> m_Vertices;

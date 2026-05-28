@@ -7,7 +7,6 @@
 
 namespace IRMC {
 
-
     class Map {
     public:
         static constexpr UInt32 MAGIC = 0x6D627269; // irbm
@@ -31,6 +30,7 @@ namespace IRMC {
         struct BMHeader {
             UInt32 magic = MAGIC;
             UInt32 version = VERSION;
+            UInt64 uncompressed_size; // If non-zero, the file is compressed.
 
             BMLumpInfo lumps[LUMPTYPE__COUNT];
         };
@@ -41,7 +41,7 @@ namespace IRMC {
 
         void LoadMapFromData(const char* data);
         void LoadMapFromFile(const char* path);
-        void CompileMap(const char* outpath);
+        void CompileMap(const char* outpath, bool compress);
 
         const std::vector<Entity>& GetEntities() const IRX_RETURN(m_Entities);
 

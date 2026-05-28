@@ -1,4 +1,5 @@
 #include <IRX_Common.hpp>
+#include <IRX_Compression.hpp>
 #include <IRMC_Map.hpp>
 #include <IRMC_Brush.hpp>
 #include <IRMC_Write.hpp>
@@ -8,7 +9,7 @@
 
 namespace IRMC {
 
-    void Map::CompileMap(const char* outpath)
+    void Map::CompileMap(const char* outpath, bool compress)
     {
         for (UInt8 i = 0; i < Stage::_COUNT; i++) {
             Stage* stage = m_Stages[i];
@@ -47,9 +48,25 @@ namespace IRMC {
 
         WriteNavTiles(streams[LUMPTYPE_NAVTILES]);
 
+        std::vector<char> lumps;
+
+        for (UInt32 i = 0; i < LUMPTYPE__COUNT; i++) {
+            std::vector<char>& lumpStr = streams[i];
+            lumps.insert(lumps.end(), lumpStr.begin(), lumpStr.end());
+        }
+
+        UInt64 clumpsize;
+        const UInt8* clumps = nullptr;
+        IRX_DEFER({ if (clumps) delete[] clumps; });
+
+        if (compress) {
+            clumps = Compress((UInt8*)lumps.data(), lumps.size(), &clumpsize);
+        }
+
         std::ofstream outStream(outpath, std::ios::binary);
         WriteLE(outStream, m_Header.magic);
         WriteLE(outStream, m_Header.version);
+        WriteLE(outStream, (UInt64)(compress ? lumps.size() : 0));
 
         UInt32 offset = sizeof(m_Header);
         for (UInt32 i = 0; i < LUMPTYPE__COUNT; i++) {
@@ -60,10 +77,7 @@ namespace IRMC {
             offset += streamLen;
         }
 
-        for (UInt32 i = 0; i < LUMPTYPE__COUNT; i++) {
-            std::vector<char>& lumpStr = streams[i];
-            outStream.write(lumpStr.data(), lumpStr.size());
-        }
+        outStream.write(compress ? (char*)clumps : lumps.data(), compress ? clumpsize : lumps.size());
     }
 
     void Map::WriteMaterialTable(std::vector<char>& stream, std::map<std::string, UInt32>& matoffsets)

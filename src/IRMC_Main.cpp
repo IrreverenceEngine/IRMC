@@ -4,6 +4,7 @@
 #include <IRMC_Plane.hpp>
 #include <IRMC_Map.hpp>
 #include <IRMC_Game.hpp>
+
 #include <filesystem>
 
 int main(int argc, char** argv)
@@ -16,8 +17,9 @@ int main(int argc, char** argv)
         { IRX::ArgVariable::TYPE_PATH, "file", "f", "File to compile" },
         { IRX::ArgVariable::TYPE_PATH, "output", "o", "Output compiled map to directory" },
         { IRX::ArgVariable::TYPE_PATH, "game", "g", "Path to the game's directory | Example: Some/Dir/Irreverence" },
-        { IRX::ArgVariable::TYPE_FLAG, "--no-navmesh", "N", "Disable the Navmesh stage" },
-        { IRX::ArgVariable::TYPE_FLAG, "--no-lightmap", "L", "Disable the Lightmap stage" },
+        { IRX::ArgVariable::TYPE_FLAG, "no-navmesh", "N", "Disable the Navmesh stage" },
+        { IRX::ArgVariable::TYPE_FLAG, "no-lightmap", "L", "Disable the Lightmap stage" },
+        { IRX::ArgVariable::TYPE_FLAG, "compress", "z", "Compress the file" },
         { IRX::ArgVariable::TYPE_FLAG, "colored", "c", "Enable colored output" },
         { IRX::ArgVariable::TYPE_FLAG, "help", "h", "Shows this help message :)" }
     }, argc, argv);
@@ -43,11 +45,11 @@ int main(int argc, char** argv)
     IRMC::Game::Init("Irreverence", game.c_str());
 
     IRMC::Map map;
-    if (!parser.GetVariable("--no-navmesh").AsBool()) map.EnableStage(IRMC::Stage::LEVEL_NAVMESH);
-    if (!parser.GetVariable("--no-lightmap").AsBool()) map.EnableStage(IRMC::Stage::LEVEL_LIGHTMAP);
+    if (!parser.GetVariable("no-navmesh").AsBool()) map.EnableStage(IRMC::Stage::LEVEL_NAVMESH);
+    if (!parser.GetVariable("no-lightmap").AsBool()) map.EnableStage(IRMC::Stage::LEVEL_LIGHTMAP);
 
     map.LoadMapFromFile(file.c_str());
-    map.CompileMap((output + "/" + filepath.stem().string() + ".irbm").c_str());
+    map.CompileMap((output + "/" + filepath.stem().string() + ".irbm").c_str(), parser.GetVariable("compress").AsBool());
 
     return 0;
 }
