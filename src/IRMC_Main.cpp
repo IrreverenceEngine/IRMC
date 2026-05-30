@@ -4,6 +4,7 @@
 #include <IRMC_Plane.hpp>
 #include <IRMC_Map.hpp>
 #include <IRMC_Game.hpp>
+#include <IRMC_Octree.hpp>
 
 #include <filesystem>
 

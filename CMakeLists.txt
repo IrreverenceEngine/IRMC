@@ -11,25 +11,14 @@ file(GLOB_RECURSE IRMC_SRC CONFIGURE_DEPENDS src/*.cpp)
 
 add_subdirectory(vendor/IRX)
 
-set(SDL_EXAMPLES OFF)
-add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
-
-set(RECASTNAVIGATION_DEMO OFF)
-set(RECASTNAVIGATION_TESTS OFF)
-set(RECASTNAVIGATION_EXAMPLES OFF)
-add_subdirectory(vendor/recastnavigation)
-
 add_executable(irmc ${IRMC_SRC})
 
 target_link_libraries(irmc PRIVATE
-    glm::glm SDL3-static RecastNavigation::Recast RecastNavigation::Detour irx
+    irx
 )
 
 target_include_directories(irmc PUBLIC
     src/
     src/thirdparty
     irx
-    vendor/SDL/include
-    vendor/recastnavigation/Recast/Include
-    vendor/recastnavigation/Detour/Include
 )
